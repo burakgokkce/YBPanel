@@ -30,16 +30,16 @@ export interface Task {
   _id: string;
   title: string;
   description: string;
-  assignedTo?: string[];
-  assignedToNames?: string[];
+  assignedTo: string[];
+  assignedToNames: string[];
   team?: string;
-  status: 'pending' | 'in_progress' | 'completed';
-  priority: 'low' | 'medium' | 'high';
-  dueDate?: Date;
+  status: 'beklemede' | 'devam_ediyor' | 'tamamlandi' | 'iptal_edildi';
+  priority: 'dusuk' | 'orta' | 'yuksek' | 'acil';
+  dueDate?: string;
   createdBy: string;
   createdByName: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Meeting {

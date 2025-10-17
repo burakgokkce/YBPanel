@@ -40,42 +40,42 @@ export default function AdminDashboard() {
 
   const statCards = [
     {
-      title: 'Total Members',
+      title: 'Toplam Üye',
       value: stats?.totalMembers || 0,
       icon: Users,
       color: 'text-blue-400',
       bgColor: 'bg-blue-400/20',
     },
     {
-      title: 'Active Members',
+      title: 'Aktif Üye',
       value: stats?.activeMembers || 0,
       icon: TrendingUp,
       color: 'text-green-400',
       bgColor: 'bg-green-400/20',
     },
     {
-      title: 'Total Tasks',
+      title: 'Toplam Görev',
       value: stats?.totalTasks || 0,
       icon: CheckSquare,
       color: 'text-accent',
       bgColor: 'bg-accent/20',
     },
     {
-      title: 'Completed Tasks',
+      title: 'Tamamlanan Görev',
       value: stats?.completedTasks || 0,
       icon: Activity,
       color: 'text-highlight',
       bgColor: 'bg-highlight/20',
     },
     {
-      title: 'Announcements',
+      title: 'Duyuru',
       value: stats?.totalAnnouncements || 0,
       icon: MessageSquare,
       color: 'text-yellow-400',
       bgColor: 'bg-yellow-400/20',
     },
     {
-      title: 'Upcoming Meetings',
+      title: 'Toplantı',
       value: stats?.upcomingMeetings || 0,
       icon: Calendar,
       color: 'text-purple-400',
@@ -103,8 +103,8 @@ export default function AdminDashboard() {
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-          <p className="text-gray-400">Welcome back! Here's what's happening at YB Digital.</p>
+          <h1 className="text-3xl font-bold mb-2">Yönetici Paneli</h1>
+          <p className="text-gray-400">Tekrar hoş geldiniz! Takımınızda neler oluyor, buradan takip edin.</p>
         </div>
 
         {/* Stats Grid */}

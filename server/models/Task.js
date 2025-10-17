@@ -23,13 +23,13 @@ const taskSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'in_progress', 'completed'],
-    default: 'pending',
+    enum: ['beklemede', 'devam_ediyor', 'tamamlandi', 'iptal_edildi'],
+    default: 'beklemede'
   },
   priority: {
     type: String,
-    enum: ['low', 'medium', 'high'],
-    default: 'medium',
+    enum: ['dusuk', 'orta', 'yuksek', 'acil'],
+    default: 'orta'
   },
   dueDate: {
     type: Date,

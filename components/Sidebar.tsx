@@ -14,7 +14,8 @@ import {
   Menu, 
   X,
   Shield,
-  User
+  User,
+  LayoutDashboard
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -28,20 +29,20 @@ export default function Sidebar({ userRole }: SidebarProps) {
   const router = useRouter();
 
   const adminMenuItems = [
-    { icon: BarChart3, label: 'Dashboard', href: '/admin', exact: true },
-    { icon: Users, label: 'Members', href: '/admin/members' },
-    { icon: MessageSquare, label: 'Announcements', href: '/admin/announcements' },
-    { icon: CheckSquare, label: 'Tasks', href: '/admin/tasks' },
-    { icon: Calendar, label: 'Meetings', href: '/admin/meetings' },
-    { icon: Settings, label: 'Settings', href: '/admin/settings' },
+    { icon: LayoutDashboard, label: 'Panel', href: '/admin', exact: true },
+    { icon: Users, label: 'Üyeler', href: '/admin/members' },
+    { icon: MessageSquare, label: 'Duyurular', href: '/admin/announcements' },
+    { icon: CheckSquare, label: 'Görevler', href: '/admin/tasks' },
+    { icon: Calendar, label: 'Toplantılar', href: '/admin/meetings' },
+    { icon: Settings, label: 'Ayarlar', href: '/admin/settings' },
   ];
 
   const memberMenuItems = [
-    { icon: BarChart3, label: 'Dashboard', href: '/member', exact: true },
-    { icon: CheckSquare, label: 'My Tasks', href: '/member/tasks' },
-    { icon: MessageSquare, label: 'Announcements', href: '/member/announcements' },
-    { icon: Calendar, label: 'Meetings', href: '/member/meetings' },
-    { icon: User, label: 'Profile', href: '/member/profile' },
+    { icon: LayoutDashboard, label: 'Panel', href: '/member', exact: true },
+    { icon: CheckSquare, label: 'Görevlerim', href: '/member/tasks' },
+    { icon: MessageSquare, label: 'Duyurular', href: '/member/announcements' },
+    { icon: Calendar, label: 'Toplantılar', href: '/member/meetings' },
+    { icon: User, label: 'Profil', href: '/member/profile' },
   ];
 
   const menuItems = userRole === 'admin' ? adminMenuItems : memberMenuItems;
@@ -49,7 +50,7 @@ export default function Sidebar({ userRole }: SidebarProps) {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    toast.success('Logged out successfully');
+    toast.success('Başarıyla çıkış yapıldı');
     router.push('/');
   };
 
@@ -138,7 +139,7 @@ export default function Sidebar({ userRole }: SidebarProps) {
               `}
             >
               <LogOut className="w-5 h-5 flex-shrink-0" />
-              {!isCollapsed && <span className="font-medium">Logout</span>}
+              {!isCollapsed && <span className="font-medium">Çıkış</span>}
             </button>
           </div>
         </div>

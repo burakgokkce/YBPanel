@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Shield, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Shield, Eye, EyeOff, ArrowLeft, LogIn } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
 
@@ -47,22 +47,22 @@ export default function AdminLogin() {
           className="inline-flex items-center text-gray-400 hover:text-white mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
+          Ana Sayfaya Dön
         </Link>
 
         <div className="bg-dark-card border border-dark-border rounded-2xl p-8 shadow-2xl">
           <div className="text-center mb-8">
-            <div className="bg-accent/20 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+            <div className="w-16 h-16 bg-accent/20 rounded-xl flex items-center justify-center mx-auto mb-4">
               <Shield className="w-8 h-8 text-accent" />
             </div>
-            <h1 className="text-2xl font-bold mb-2">Admin Login</h1>
-            <p className="text-gray-400">Enter master password to access admin panel</p>
+            <h1 className="text-3xl font-bold mb-2">Yönetici Girişi</h1>
+            <p className="text-gray-400">Yönetici paneline erişmek için ana şifreyi girin</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="password" className="block text-sm font-medium mb-2">
-                Master Password
+                Ana Şifre
               </label>
               <div className="relative">
                 <input
@@ -71,7 +71,7 @@ export default function AdminLogin() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
-                  placeholder="Enter master password"
+                  placeholder="Ana şifreyi girin"
                   disabled={isLoading}
                 />
                 <button
@@ -87,18 +87,28 @@ export default function AdminLogin() {
 
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full bg-accent hover:bg-accent/90 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isLoading || !password}
+              className="w-full bg-accent hover:bg-accent/90 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-xl transition-colors flex items-center justify-center"
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Giriş yapılıyor...
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-5 h-5 mr-2" />
+                  Giriş Yap
+                </>
+              )}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-gray-400 text-sm">
-              Not an admin?{' '}
+              Yönetici değil misiniz?{' '}
               <Link href="/member-login" className="text-accent hover:text-highlight transition-colors">
-                Member Login
+                Üye Girişi
               </Link>
             </p>
           </div>
