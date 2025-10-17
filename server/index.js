@@ -5,15 +5,21 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
+// Set default environment variables if not provided
+process.env.MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27018/yb-digital-panel';
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'yb-digital-panel-super-secret-jwt-key-2024';
+process.env.ADMIN_MASTER_PASSWORD = process.env.ADMIN_MASTER_PASSWORD || 'yb150924';
+process.env.PORT = process.env.PORT || '5001';
+
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/yb-digital-panel', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27018/yb-digital-panel', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -29,6 +35,16 @@ const User = require('./models/User');
 const Announcement = require('./models/Announcement');
 const Task = require('./models/Task');
 const Meeting = require('./models/Meeting');
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'YB Digital Panel Server is running!',
+    port: PORT,
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Import routes
 const authRoutes = require('./routes/auth');

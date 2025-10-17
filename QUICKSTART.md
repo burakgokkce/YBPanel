@@ -60,7 +60,7 @@ Open your browser and go to: **http://localhost:3000**
 
 ### Admin Access
 - Go to "Admin Login"
-- **Master Password:** `YB150924`
+- **Master Password:** `yb150924`
 
 ### Sample Member Access
 - Go to "Member Login"
@@ -94,6 +94,18 @@ Open your browser and go to: **http://localhost:3000**
 
 ## 🛠️ Troubleshooting
 
+### Giriş Yapamıyorum Sorunu
+```bash
+# 1. Sunucuları test et
+npm run test-server
+
+# 2. MongoDB'nin çalıştığını kontrol et
+ps aux | grep mongod
+
+# 3. Veritabanını temizle ve yeniden oluştur
+npm run seed
+```
+
 ### MongoDB Connection Issues
 ```bash
 # Check if MongoDB is running
@@ -101,6 +113,9 @@ ps aux | grep mongod
 
 # Start MongoDB if not running
 mongod --dbpath /usr/local/var/mongodb
+
+# Or start with brew (if installed via Homebrew)
+brew services start mongodb-community
 ```
 
 ### Port Already in Use
@@ -110,6 +125,18 @@ lsof -ti:3000 | xargs kill -9
 
 # Kill process on port 5000
 lsof -ti:5000 | xargs kill -9
+```
+
+### Sunucu Çalışmıyor
+```bash
+# Backend sunucusunu başlat
+npm run dev:server
+
+# Frontend sunucusunu başlat (başka terminal)
+npm run dev
+
+# Test et
+npm run test-server
 ```
 
 ### Clear Database and Reseed

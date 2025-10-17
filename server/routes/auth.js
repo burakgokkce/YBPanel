@@ -8,13 +8,14 @@ const router = express.Router();
 
 // Generate JWT Token
 const generateToken = (user) => {
+  const JWT_SECRET = process.env.JWT_SECRET || 'yb-digital-panel-super-secret-jwt-key-2024';
   return jwt.sign(
     { 
       userId: user._id, 
       email: user.email, 
       role: user.role 
     },
-    process.env.JWT_SECRET,
+    JWT_SECRET,
     { expiresIn: '7d' }
   );
 };
@@ -31,7 +32,8 @@ router.post('/admin-login', async (req, res) => {
       });
     }
 
-    if (password !== process.env.ADMIN_MASTER_PASSWORD) {
+    const ADMIN_PASSWORD = process.env.ADMIN_MASTER_PASSWORD || 'yb150924';
+    if (password !== ADMIN_PASSWORD) {
       return res.status(401).json({
         success: false,
         message: 'Invalid master password'
@@ -42,10 +44,11 @@ router.post('/admin-login', async (req, res) => {
     let admin = await User.findOne({ email: 'admin@ybdigital.com' });
     
     if (!admin) {
+      const ADMIN_PASSWORD = process.env.ADMIN_MASTER_PASSWORD || 'yb150924';
       admin = new User({
         name: 'YB Digital Admin',
         email: 'admin@ybdigital.com',
-        password: await bcrypt.hash(process.env.ADMIN_MASTER_PASSWORD, 10),
+        password: await bcrypt.hash(ADMIN_PASSWORD, 10),
         role: 'admin',
         isActive: true,
       });

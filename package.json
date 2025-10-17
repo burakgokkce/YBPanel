@@ -10,7 +10,8 @@
     "server": "node server/index.js",
     "dev:server": "nodemon server/index.js",
     "seed": "node server/seed.js",
-    "setup": "npm install && npm run seed"
+    "setup": "npm install && npm run seed",
+    "test-server": "node test-server.js"
   },
   "dependencies": {
     "next": "^15.0.0",

@@ -9,7 +9,7 @@ const Task = require('./models/Task');
 const Meeting = require('./models/Meeting');
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/yb-digital-panel', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27018/yb-digital-panel', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -27,7 +27,7 @@ const seedData = async () => {
     console.log('🗑️  Cleared existing data');
 
     // Create Admin User
-    const adminPassword = await bcrypt.hash(process.env.ADMIN_MASTER_PASSWORD || 'YB150924', 10);
+    const adminPassword = await bcrypt.hash(process.env.ADMIN_MASTER_PASSWORD || 'yb150924', 10);
     const admin = new User({
       name: 'YB Digital Admin',
       email: 'admin@ybdigital.com',
@@ -246,7 +246,7 @@ const seedData = async () => {
     console.log(`   • ${createdTasks.length} Tasks`);
     console.log(`   • ${createdMeetings.length} Meetings`);
     console.log('\n🔑 Login Credentials:');
-    console.log('   Admin: Master Password = YB150924');
+    console.log('   Admin: Master Password = yb150924');
     console.log('   Members: password123 (for all sample members)');
     console.log('\n🌐 Access the application at http://localhost:3000');
 
