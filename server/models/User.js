@@ -2,9 +2,18 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
-  name: {
+  firstName: {
     type: String,
     required: true,
+    trim: true,
+  },
+  lastName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  name: {
+    type: String,
     trim: true,
   },
   email: {
@@ -27,9 +36,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
-  profilePicture: {
+  department: {
     type: String,
-    default: '',
+    enum: ['iOS', 'Android', 'Backend', 'Web', 'Mobil', 'Tasarım', 'Test', 'Proje Yönetimi', 'Yönetim'],
+    trim: true,
+  },
+  position: {
+    type: String,
+    trim: true,
   },
   role: {
     type: String,
@@ -44,16 +58,20 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  department: {
+  profilePicture: {
     type: String,
-    trim: true,
-  },
-  position: {
-    type: String,
-    trim: true,
+    default: '',
   },
 }, {
   timestamps: true,
+});
+
+// Auto-generate name from firstName and lastName
+userSchema.pre('save', function(next) {
+  if (this.firstName && this.lastName) {
+    this.name = `${this.firstName} ${this.lastName}`;
+  }
+  next();
 });
 
 // Hash password before saving

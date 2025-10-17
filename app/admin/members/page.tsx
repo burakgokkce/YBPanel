@@ -158,12 +158,12 @@ export default function MembersPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Team Members</h1>
-            <p className="text-gray-400">Manage your team members and their information</p>
+            <h1 className="text-3xl font-bold mb-2">Ekip Üyeleri</h1>
+            <p className="text-gray-400">Ekip üyelerinizi ve bilgilerini yönetin</p>
           </div>
           <button className="bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-xl flex items-center space-x-2 transition-colors">
             <Plus className="w-4 h-4" />
-            <span>Add Member</span>
+            <span>Üye Ekle</span>
           </button>
         </div>
 

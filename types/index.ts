@@ -1,17 +1,19 @@
 export interface User {
   _id: string;
+  firstName: string;
+  lastName: string;
   name: string;
   email: string;
   phone?: string;
   address?: string;
-  profilePicture?: string;
-  role: 'admin' | 'member';
-  joinDate: Date;
-  isActive: boolean;
-  department?: string;
+  department?: 'iOS' | 'Android' | 'Backend' | 'Web' | 'Mobil' | 'Tasarım' | 'Test' | 'Proje Yönetimi' | 'Yönetim';
   position?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  role: 'admin' | 'member';
+  isActive: boolean;
+  joinDate: string;
+  profilePicture?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Announcement {

@@ -31,6 +31,7 @@ export default function Sidebar({ userRole }: SidebarProps) {
   const adminMenuItems = [
     { icon: LayoutDashboard, label: 'Panel', href: '/admin', exact: true },
     { icon: Users, label: 'Üyeler', href: '/admin/members' },
+    { icon: Shield, label: 'Ekip', href: '/admin/team' },
     { icon: MessageSquare, label: 'Duyurular', href: '/admin/announcements' },
     { icon: CheckSquare, label: 'Görevler', href: '/admin/tasks' },
     { icon: Calendar, label: 'Toplantılar', href: '/admin/meetings' },
