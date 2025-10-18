@@ -15,7 +15,8 @@ import {
   X,
   Shield,
   User,
-  LayoutDashboard
+  LayoutDashboard,
+  Mail
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -36,6 +37,7 @@ export default function Sidebar({ userRole }: SidebarProps) {
     { icon: MessageSquare, label: 'Duyurular', href: '/admin/announcements' },
     { icon: CheckSquare, label: 'Görevler', href: '/admin/tasks' },
     { icon: Calendar, label: 'Toplantılar', href: '/admin/meetings' },
+    { icon: Mail, label: 'E-posta Gönder', href: '/admin/email' },
     { icon: Settings, label: 'Ayarlar', href: '/admin/settings' },
   ];
 
@@ -44,6 +46,7 @@ export default function Sidebar({ userRole }: SidebarProps) {
     { icon: CheckSquare, label: 'Görevlerim', href: '/member/tasks' },
     { icon: MessageSquare, label: 'Duyurular', href: '/member/announcements' },
     { icon: Calendar, label: 'Toplantılar', href: '/member/meetings' },
+    { icon: Mail, label: 'E-posta Gönder', href: '/member/email' },
     { icon: User, label: 'Profil', href: '/member/profile' },
   ];
 
@@ -84,15 +87,25 @@ export default function Sidebar({ userRole }: SidebarProps) {
           <div className="flex items-center justify-between p-6 border-b border-dark-border">
             {!isCollapsed && (
               <div className="flex items-center space-x-3">
-                {userRole === 'admin' ? (
-                  <Shield className="w-8 h-8 text-accent" />
-                ) : (
-                  <User className="w-8 h-8 text-highlight" />
-                )}
+                {/* YB Digital Logo */}
+                <img 
+                  src="/yb-digital-logo.svg" 
+                  alt="YB Digital" 
+                  className="w-8 h-8"
+                />
                 <div>
                   <h2 className="font-semibold text-lg">YB Digital</h2>
                   <p className="text-sm text-gray-400 capitalize">{userRole} Panel</p>
                 </div>
+              </div>
+            )}
+            {isCollapsed && (
+              <div className="flex items-center justify-center w-full">
+                <img 
+                  src="/yb-digital-logo.svg" 
+                  alt="YB Digital" 
+                  className="w-8 h-8"
+                />
               </div>
             )}
             <button

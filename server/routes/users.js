@@ -84,8 +84,10 @@ router.get('/:id', auth, async (req, res) => {
 // Update user
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { name, email, phone, address, department, position, isActive } = req.body;
+    const { name, firstName, lastName, email, phone, address, department, position, isActive, iban, birthDate, startDate } = req.body;
     const userId = req.params.id;
+    
+    console.log('Update user request:', { userId, body: req.body });
 
     // Members can only update their own profile, admins can update any
     if (req.user.role !== 'admin' && req.user._id.toString() !== userId) {
@@ -104,12 +106,17 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     // Update fields
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
     if (name) user.name = name;
     if (email) user.email = email.toLowerCase();
     if (phone !== undefined) user.phone = phone;
     if (address !== undefined) user.address = address;
     if (department !== undefined) user.department = department;
     if (position !== undefined) user.position = position;
+    if (iban !== undefined) user.iban = iban;
+    if (birthDate !== undefined) user.birthDate = birthDate ? new Date(birthDate) : null;
+    if (startDate !== undefined) user.startDate = startDate ? new Date(startDate) : null;
     
     // Only admins can change active status
     if (req.user.role === 'admin' && isActive !== undefined) {
@@ -117,6 +124,8 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     await user.save();
+    
+    console.log('User updated successfully:', user);
 
     res.json({
       success: true,

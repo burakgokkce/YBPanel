@@ -45,7 +45,10 @@ export default function MembersTablePage() {
     address: '',
     department: '',
     position: '',
-    profilePicture: ''
+    profilePicture: '',
+    iban: '',
+    birthDate: '',
+    startDate: ''
   });
 
   const departments = ['iOS', 'Android', 'Backend', 'Web', 'Mobil', 'Tasarım', 'Test', 'Proje Yönetimi', 'Yönetim'];
@@ -110,7 +113,10 @@ export default function MembersTablePage() {
       address: member.address || '',
       department: member.department || '',
       position: member.position || '',
-      profilePicture: member.profilePicture || ''
+      profilePicture: member.profilePicture || '',
+      iban: member.iban || '',
+      birthDate: member.birthDate ? new Date(member.birthDate).toISOString().split('T')[0] : '',
+      startDate: member.startDate ? new Date(member.startDate).toISOString().split('T')[0] : ''
     });
     setShowEditModal(true);
   };
@@ -119,7 +125,9 @@ export default function MembersTablePage() {
     if (!editingMember) return;
 
     try {
+      console.log('Saving edit data:', editFormData);
       const response = await api.put(`/users/${editingMember._id}`, editFormData);
+      console.log('Edit response:', response.data);
       if (response.data.success) {
         toast.success('Üye bilgileri güncellendi');
         setShowEditModal(false);
@@ -127,6 +135,7 @@ export default function MembersTablePage() {
         fetchMembers();
       }
     } catch (error: any) {
+      console.error('Edit error:', error);
       toast.error(error.response?.data?.message || 'Güncelleme başarısız');
     }
   };
@@ -271,8 +280,10 @@ export default function MembersTablePage() {
                   <th className="text-left p-4 font-semibold">Departman</th>
                   <th className="text-left p-4 font-semibold">Pozisyon</th>
                   <th className="text-left p-4 font-semibold">Telefon</th>
+                  <th className="text-left p-4 font-semibold">IBAN</th>
+                  <th className="text-left p-4 font-semibold">Doğum</th>
+                  <th className="text-left p-4 font-semibold">İşe Başlama</th>
                   <th className="text-left p-4 font-semibold">Durum</th>
-                  <th className="text-left p-4 font-semibold">Katılım</th>
                   <th className="text-left p-4 font-semibold">İşlemler</th>
                 </tr>
               </thead>
@@ -359,6 +370,30 @@ export default function MembersTablePage() {
                           <span className="text-gray-500 text-sm">-</span>
                         )}
                       </div>
+                    </td>
+
+                    {/* IBAN */}
+                    <td className="p-4">
+                      <span className="text-sm font-mono">
+                        {member.iban ? 
+                          `${member.iban.substring(0, 8)}****${member.iban.substring(member.iban.length - 4)}` 
+                          : '-'
+                        }
+                      </span>
+                    </td>
+
+                    {/* Birth Date */}
+                    <td className="p-4">
+                      <span className="text-sm">
+                        {member.birthDate ? formatDate(member.birthDate) : '-'}
+                      </span>
+                    </td>
+
+                    {/* Start Date */}
+                    <td className="p-4">
+                      <span className="text-sm">
+                        {member.startDate ? formatDate(member.startDate) : '-'}
+                      </span>
                     </td>
 
                     {/* Status */}
@@ -519,6 +554,38 @@ export default function MembersTablePage() {
                   onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
                   className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">IBAN</label>
+                <input
+                  type="text"
+                  value={editFormData.iban}
+                  onChange={(e) => setEditFormData({ ...editFormData, iban: e.target.value })}
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  placeholder="TR00 0000 0000 0000 0000 0000 00"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Doğum Tarihi</label>
+                  <input
+                    type="date"
+                    value={editFormData.birthDate}
+                    onChange={(e) => setEditFormData({ ...editFormData, birthDate: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">İşe Başlama Tarihi</label>
+                  <input
+                    type="date"
+                    value={editFormData.startDate}
+                    onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
               </div>
 
               <div>

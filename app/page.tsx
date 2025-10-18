@@ -6,6 +6,14 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-dark-bg to-dark-card flex items-center justify-center p-4">
       <div className="max-w-4xl w-full">
         <div className="text-center">
+          {/* YB Digital Logo */}
+          <div className="w-24 h-24 mx-auto mb-6">
+            <img 
+              src="/yb-digital-logo.svg" 
+              alt="YB Digital" 
+              className="w-full h-full"
+            />
+          </div>
           <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-accent to-highlight bg-clip-text text-transparent">
             YB Digital Panel
           </h1>

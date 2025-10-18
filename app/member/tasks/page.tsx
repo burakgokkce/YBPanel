@@ -26,6 +26,7 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -37,6 +38,23 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+
+// Droppable Column Component
+function DroppableColumn({ id, children }: { id: string; children: React.ReactNode }) {
+  const { isOver, setNodeRef } = useDroppable({
+    id,
+  });
+
+  const style = {
+    backgroundColor: isOver ? 'rgba(59, 130, 246, 0.1)' : undefined,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="min-h-[400px] transition-colors">
+      {children}
+    </div>
+  );
+}
 
 // Sortable Task Item Component for Members
 function SortableTaskItem({ task, onStatusUpdate }: {
@@ -384,28 +402,30 @@ export default function MemberTasksPage() {
                   </p>
                 </div>
 
-                <SortableContext
-                  items={tasksByStatus[column.key as keyof typeof tasksByStatus].map(task => task._id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="space-y-3 min-h-[400px]">
-                    {tasksByStatus[column.key as keyof typeof tasksByStatus].map(task => (
-                      <SortableTaskItem
-                        key={task._id}
-                        task={task}
-                        onStatusUpdate={handleStatusUpdate}
-                      />
-                    ))}
+                <DroppableColumn id={column.key}>
+                  <SortableContext
+                    items={tasksByStatus[column.key as keyof typeof tasksByStatus].map(task => task._id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-3 min-h-[400px]">
+                      {tasksByStatus[column.key as keyof typeof tasksByStatus].map(task => (
+                        <SortableTaskItem
+                          key={task._id}
+                          task={task}
+                          onStatusUpdate={handleStatusUpdate}
+                        />
+                      ))}
 
-                    {/* Empty State */}
-                    {tasksByStatus[column.key as keyof typeof tasksByStatus].length === 0 && (
-                      <div className="text-center py-8 text-gray-500">
-                        <CheckSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">Henüz görev yok</p>
-                      </div>
-                    )}
-                  </div>
-                </SortableContext>
+                      {/* Empty State */}
+                      {tasksByStatus[column.key as keyof typeof tasksByStatus].length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          <CheckSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">Henüz görev yok</p>
+                        </div>
+                      )}
+                    </div>
+                  </SortableContext>
+                </DroppableColumn>
               </div>
             ))}
           </div>

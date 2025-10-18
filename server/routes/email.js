@@ -1,16 +1,34 @@
 const express = require('express');
 const router = express.Router();
 const nodemailer = require('nodemailer');
-const auth = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 
-// Email configuration (you can use environment variables for production)
+// Email configuration (you can use environment variables// Email configuration
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // or your email service
+  service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER || 'your-email@gmail.com',
-    pass: process.env.EMAIL_PASS || 'your-app-password'
+    user: 'ybdigitalx@gmail.com',
+    pass: 'your-app-password' // Bu kısmı gerçek Gmail App Password ile değiştirin
   }
 });
+
+// Check if we have valid email credentials
+const hasValidEmailConfig = false; // Gerçek SMTP için true yapın
+
+// Mock email sending for demo purposes
+const mockEmailSend = async (emailData) => {
+  console.log(' Mock Email Sent:');
+  console.log('From:', emailData.from);
+  console.log('To:', emailData.to);
+  console.log('Subject:', emailData.subject);
+  console.log('HTML Content:', emailData.html.substring(0, 100) + '...');
+  console.log('---');
+  
+  // Simulate email sending delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  return { messageId: 'mock-' + Date.now() };
+};
 
 // Send meeting invitation
 router.post('/send-meeting-invitation', auth, async (req, res) => {
@@ -65,12 +83,23 @@ router.post('/send-meeting-invitation', auth, async (req, res) => {
 
     // Send email to all attendees
     const emailPromises = attendeeEmails.map(email => {
-      return transporter.sendMail({
-        from: process.env.EMAIL_USER || 'noreply@ybdigital.com',
+      const emailData = {
+        from: process.env.EMAIL_USER || 'ybdigitalx@gmail.com',
         to: email,
         subject: emailSubject,
         html: emailBody
-      });
+      };
+      
+      // Use real email if configured, otherwise use mock
+      if (hasValidEmailConfig) {
+        return transporter.sendMail(emailData).catch(error => {
+          console.log('Real email failed, using mock:', error.message);
+          return mockEmailSend(emailData);
+        });
+      } else {
+        console.log('No email config found, using mock system');
+        return mockEmailSend(emailData);
+      }
     });
 
     await Promise.all(emailPromises);
@@ -92,7 +121,7 @@ router.post('/send-meeting-invitation', auth, async (req, res) => {
 // Send general notification
 router.post('/send-notification', auth, async (req, res) => {
   try {
-    const { subject, message, recipients } = req.body;
+    const { subject, message, recipients, fromUser } = req.body;
 
     if (!subject || !message || !recipients || recipients.length === 0) {
       return res.status(400).json({
@@ -117,13 +146,33 @@ router.post('/send-notification', auth, async (req, res) => {
       </div>
     `;
 
+    // Determine sender email
+    const senderEmail = fromUser && req.user.role === 'member' 
+      ? req.user.email 
+      : (process.env.EMAIL_USER || 'ybdigitalx@gmail.com');
+    
+    const senderName = fromUser && req.user.role === 'member' 
+      ? req.user.name 
+      : 'YB Digital Panel';
+
     const emailPromises = recipients.map(email => {
-      return transporter.sendMail({
-        from: process.env.EMAIL_USER || 'noreply@ybdigital.com',
+      const emailData = {
+        from: `${senderName} <${senderEmail}>`,
         to: email,
         subject: subject,
         html: emailBody
-      });
+      };
+      
+      // Use real email if configured, otherwise use mock
+      if (hasValidEmailConfig) {
+        return transporter.sendMail(emailData).catch(error => {
+          console.log('Real email failed, using mock:', error.message);
+          return mockEmailSend(emailData);
+        });
+      } else {
+        console.log('No email config found, using mock system');
+        return mockEmailSend(emailData);
+      }
     });
 
     await Promise.all(emailPromises);

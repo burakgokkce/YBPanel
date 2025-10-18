@@ -97,10 +97,16 @@ export default function Register() {
 
         <div className="bg-dark-card border border-dark-border rounded-2xl p-8 shadow-2xl">
           <div className="text-center mb-8">
-            <div className="bg-green-500/20 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <Users className="w-8 h-8 text-green-500" />
+            {/* YB Digital Logo */}
+            <div className="w-16 h-16 mx-auto mb-4">
+              <img 
+                src="/yb-digital-logo.svg" 
+                alt="YB Digital" 
+                className="w-full h-full"
+              />
             </div>
-            <h1 className="text-2xl font-bold mb-2">YB Digital'e Katıl</h1>
+            <h1 className="text-2xl font-bold mb-2">YB Digital</h1>
+            <h2 className="text-xl font-semibold mb-2 text-green-500">Üyelik</h2>
             <p className="text-gray-400">Üye hesabınızı oluşturun</p>
           </div>
 

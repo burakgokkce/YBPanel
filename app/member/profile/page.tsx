@@ -91,7 +91,11 @@ export default function MemberProfile() {
         setUser(response.data.data);
         // Update localStorage
         localStorage.setItem('user', JSON.stringify(response.data.data));
-        toast.success('Profile updated successfully');
+        
+        // Dispatch custom event to update header
+        window.dispatchEvent(new CustomEvent('userUpdated', { detail: response.data.data }));
+        
+        toast.success('Profil başarıyla güncellendi');
         setIsEditing(false);
       }
     } catch (error: any) {
@@ -172,6 +176,10 @@ export default function MemberProfile() {
         const updatedUser = { ...user, profilePicture: response.data.data.profilePicture };
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
+        
+        // Dispatch custom event to update header
+        window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }));
+        
         toast.success('Profil resmi başarıyla yüklendi');
       }
     } catch (error: any) {
@@ -189,6 +197,10 @@ export default function MemberProfile() {
         const updatedUser = { ...user, profilePicture: '' };
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
+        
+        // Dispatch custom event to update header
+        window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }));
+        
         toast.success('Profil resmi silindi');
       }
     } catch (error: any) {

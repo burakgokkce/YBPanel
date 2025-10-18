@@ -62,6 +62,17 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  iban: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  birthDate: {
+    type: Date,
+  },
+  startDate: {
+    type: Date,
+  },
 }, {
   timestamps: true,
 });

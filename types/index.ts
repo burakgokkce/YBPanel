@@ -12,6 +12,9 @@ export interface User {
   isActive: boolean;
   joinDate: string;
   profilePicture?: string;
+  iban?: string;
+  birthDate?: string;
+  startDate?: string;
   createdAt: string;
   updatedAt: string;
 }

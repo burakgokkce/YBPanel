@@ -51,12 +51,19 @@ export default function AdminLogin() {
         </Link>
 
         <div className="bg-dark-card border border-dark-border rounded-2xl p-8 shadow-2xl">
+          {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-accent/20 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Shield className="w-8 h-8 text-accent" />
+            {/* YB Digital Logo */}
+            <div className="w-16 h-16 mx-auto mb-4">
+              <img 
+                src="/yb-digital-logo.svg" 
+                alt="YB Digital" 
+                className="w-full h-full"
+              />
             </div>
-            <h1 className="text-3xl font-bold mb-2">Yönetici Girişi</h1>
-            <p className="text-gray-400">Yönetici paneline erişmek için ana şifreyi girin</p>
+            <h1 className="text-2xl font-bold mb-2">YB Digital</h1>
+            <h2 className="text-xl font-semibold mb-2 text-accent">Admin Girişi</h2>
+            <p className="text-gray-400">Yönetici paneline erişmek için master şifrenizi girin</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">

@@ -1,0 +1,14 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Outer rounded square frame -->
+  <path d="M6 2 C3 2 2 3 2 6 L2 26 C2 29 3 30 6 30 L26 30 C29 30 30 29 30 26 L30 6 C30 3 29 2 26 2 Z M6 6 L26 6 L26 26 L6 26 Z" fill="url(#blueGradient)"/>
+  
+  <!-- Inner diamond -->
+  <rect x="12" y="12" width="8" height="8" fill="url(#blueGradient)" transform="rotate(45 16 16)"/>
+</svg>
