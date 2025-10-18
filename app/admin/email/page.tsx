@@ -37,7 +37,7 @@ export default function AdminEmailPage() {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      const response = await api.get('/users');
+      const response = await api.get('/users/for-email');
       if (response.data.success) {
         setUsers(response.data.data);
       }

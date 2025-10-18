@@ -3,12 +3,12 @@ const User = require('../models/User');
 const Task = require('../models/Task');
 const Announcement = require('../models/Announcement');
 const Meeting = require('../models/Meeting');
-const { auth, adminAuth } = require('../middleware/auth');
+const { auth, adminAuth, projectManagerAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Get dashboard stats (Admin only)
-router.get('/stats', adminAuth, async (req, res) => {
+// Get dashboard stats (Admin and Project Manager)
+router.get('/stats', projectManagerAuth, async (req, res) => {
   try {
     const [
       totalMembers,
@@ -117,8 +117,8 @@ router.get('/member', auth, async (req, res) => {
   }
 });
 
-// Get recent activities (Admin only)
-router.get('/activities', adminAuth, async (req, res) => {
+// Get recent activities (Admin and Project Manager)
+router.get('/activities', projectManagerAuth, async (req, res) => {
   try {
     const { limit = 10 } = req.query;
 

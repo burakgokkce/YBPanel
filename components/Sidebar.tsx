@@ -21,7 +21,7 @@ import {
 import toast from 'react-hot-toast';
 
 interface SidebarProps {
-  userRole: 'admin' | 'member';
+  userRole: 'admin' | 'project_manager' | 'member';
 }
 
 export default function Sidebar({ userRole }: SidebarProps) {
@@ -50,7 +50,21 @@ export default function Sidebar({ userRole }: SidebarProps) {
     { icon: User, label: 'Profil', href: '/member/profile' },
   ];
 
-  const menuItems = userRole === 'admin' ? adminMenuItems : memberMenuItems;
+  const projectManagerMenuItems = [
+    { icon: LayoutDashboard, label: 'Kontrol Paneli', href: '/project-manager', exact: true },
+    { icon: Users, label: 'Ekip Yönetimi', href: '/project-manager/team' },
+    { icon: CheckSquare, label: 'Görev Yönetimi', href: '/project-manager/tasks' },
+    { icon: MessageSquare, label: 'Duyuru Yönetimi', href: '/project-manager/announcements' },
+    { icon: Calendar, label: 'Toplantı Yönetimi', href: '/project-manager/meetings' },
+    { icon: Mail, label: 'E-posta Gönder', href: '/project-manager/email' },
+    { icon: BarChart3, label: 'Raporlar', href: '/project-manager/reports' },
+    { icon: Settings, label: 'Sistem Ayarları', href: '/project-manager/settings' },
+    { icon: User, label: 'Profil Ayarları', href: '/project-manager/profile' },
+  ];
+
+  const menuItems = userRole === 'admin' ? adminMenuItems : 
+                   userRole === 'project_manager' ? projectManagerMenuItems : 
+                   memberMenuItems;
 
   const handleLogout = () => {
     localStorage.removeItem('token');

@@ -1,7 +1,7 @@
 const express = require('express');
 const Task = require('../models/Task');
 const User = require('../models/User');
-const { auth, adminAuth } = require('../middleware/auth');
+const { auth, adminAuth, projectManagerAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -120,8 +120,8 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// Create task (Admin only)
-router.post('/', adminAuth, async (req, res) => {
+// Create task (Admin and Project Manager)
+router.post('/', projectManagerAuth, async (req, res) => {
   try {
     const { title, description, assignedTo, team, priority, dueDate } = req.body;
 
@@ -240,8 +240,8 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-// Delete task (Admin only)
-router.delete('/:id', adminAuth, async (req, res) => {
+// Delete task (Admin and Project Manager)
+router.delete('/:id', projectManagerAuth, async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
     

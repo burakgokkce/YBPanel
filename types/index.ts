@@ -8,7 +8,7 @@ export interface User {
   address?: string;
   department?: 'iOS' | 'Android' | 'Backend' | 'Web' | 'Mobil' | 'Tasarım' | 'Test' | 'Proje Yönetimi' | 'Yönetim';
   position?: string;
-  role: 'admin' | 'member';
+  role: 'admin' | 'project_manager' | 'member';
   isActive: boolean;
   joinDate: string;
   profilePicture?: string;

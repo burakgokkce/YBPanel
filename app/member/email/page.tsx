@@ -37,7 +37,7 @@ export default function MemberEmailPage() {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      const response = await api.get('/users');
+      const response = await api.get('/users/for-email');
       if (response.data.success) {
         // Filter out current user
         const currentUser = JSON.parse(localStorage.getItem('user') || '{}');

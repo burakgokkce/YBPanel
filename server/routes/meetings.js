@@ -1,6 +1,6 @@
 const express = require('express');
 const Meeting = require('../models/Meeting');
-const { auth, adminAuth } = require('../middleware/auth');
+const { auth, adminAuth, projectManagerAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -61,8 +61,8 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// Create meeting (Admin only)
-router.post('/', adminAuth, async (req, res) => {
+// Create meeting (Admin and Project Manager)
+router.post('/', projectManagerAuth, async (req, res) => {
   try {
     const { title, description, date, time, link, notes, attendees } = req.body;
 
@@ -105,8 +105,8 @@ router.post('/', adminAuth, async (req, res) => {
   }
 });
 
-// Update meeting (Admin only)
-router.put('/:id', adminAuth, async (req, res) => {
+// Update meeting (Admin and Project Manager)
+router.put('/:id', projectManagerAuth, async (req, res) => {
   try {
     const { title, description, date, time, link, notes, attendees } = req.body;
     
@@ -146,8 +146,8 @@ router.put('/:id', adminAuth, async (req, res) => {
   }
 });
 
-// Delete meeting (Admin only)
-router.delete('/:id', adminAuth, async (req, res) => {
+// Delete meeting (Admin and Project Manager)
+router.delete('/:id', projectManagerAuth, async (req, res) => {
   try {
     const meeting = await Meeting.findById(req.params.id);
     

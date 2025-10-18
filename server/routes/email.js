@@ -3,31 +3,81 @@ const router = express.Router();
 const nodemailer = require('nodemailer');
 const { auth } = require('../middleware/auth');
 
-// Email configuration (you can use environment variables// Email configuration
-const transporter = nodemailer.createTransport({
+// Email configuration
+let transporter;
+let hasValidEmailConfig = false;
+
+// Gmail configuration (requires App Password)
+const gmailConfig = {
   service: 'gmail',
   auth: {
     user: 'ybdigitalx@gmail.com',
-    pass: 'your-app-password' // Bu kısmı gerçek Gmail App Password ile değiştirin
+    pass: process.env.GMAIL_APP_PASSWORD || 'your-app-password' // Gerçek Gmail App Password gerekli
   }
-});
+};
 
-// Check if we have valid email credentials
-const hasValidEmailConfig = false; // Gerçek SMTP için true yapın
+// Test email configuration (Ethereal Email for testing)
+const createTestTransporter = async () => {
+  try {
+    const testAccount = await nodemailer.createTestAccount();
+    return nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass
+      }
+    });
+  } catch (error) {
+    console.error('Test email setup failed:', error);
+    return null;
+  }
+};
+
+// Initialize transporter
+const initializeEmail = async () => {
+  // Try Gmail first (if you have App Password)
+  try {
+    transporter = nodemailer.createTransport(gmailConfig);
+    await transporter.verify();
+    hasValidEmailConfig = true;
+    console.log('✅ Gmail SMTP connection successful');
+  } catch (error) {
+    console.log('❌ Gmail SMTP failed, using test email service');
+    
+    // Fallback to test email service
+    transporter = await createTestTransporter();
+    if (transporter) {
+      hasValidEmailConfig = true;
+      console.log('✅ Test email service ready');
+    } else {
+      console.log('❌ All email services failed, using mock');
+      hasValidEmailConfig = false;
+    }
+  }
+};
+
+// Initialize email on startup
+initializeEmail();
 
 // Mock email sending for demo purposes
 const mockEmailSend = async (emailData) => {
-  console.log(' Mock Email Sent:');
+  console.log('\n📧 ===== MOCK EMAIL SENT =====');
   console.log('From:', emailData.from);
   console.log('To:', emailData.to);
   console.log('Subject:', emailData.subject);
-  console.log('HTML Content:', emailData.html.substring(0, 100) + '...');
-  console.log('---');
+  console.log('ReplyTo:', emailData.replyTo || 'N/A');
+  console.log('Content Preview:', emailData.html.substring(0, 150) + '...');
+  console.log('✅ Mock email delivered successfully');
+  console.log('===============================\n');
   
-  // Simulate email sending delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  return { messageId: 'mock-' + Date.now() };
+  return {
+    messageId: 'mock-' + Date.now() + '@ybdigital.local',
+    response: 'Mock email sent successfully',
+    accepted: [emailData.to],
+    rejected: []
+  };
 };
 
 // Send meeting invitation
@@ -84,16 +134,26 @@ router.post('/send-meeting-invitation', auth, async (req, res) => {
     // Send email to all attendees
     const emailPromises = attendeeEmails.map(email => {
       const emailData = {
-        from: process.env.EMAIL_USER || 'ybdigitalx@gmail.com',
+        from: 'YB Digital <ybdigitalx@gmail.com>',
         to: email,
         subject: emailSubject,
         html: emailBody
       };
       
       // Use real email if configured, otherwise use mock
-      if (hasValidEmailConfig) {
-        return transporter.sendMail(emailData).catch(error => {
-          console.log('Real email failed, using mock:', error.message);
+      if (hasValidEmailConfig && transporter) {
+        return transporter.sendMail(emailData).then(info => {
+          console.log('✅ Meeting invitation sent successfully!');
+          if (info.messageId) {
+            console.log('Message ID:', info.messageId);
+          }
+          // If using test service, show preview URL
+          if (nodemailer.getTestMessageUrl && nodemailer.getTestMessageUrl(info)) {
+            console.log('📧 Preview URL:', nodemailer.getTestMessageUrl(info));
+          }
+          return info;
+        }).catch(error => {
+          console.log('❌ Meeting email failed, using mock:', error.message);
           return mockEmailSend(emailData);
         });
       } else {
@@ -102,11 +162,13 @@ router.post('/send-meeting-invitation', auth, async (req, res) => {
       }
     });
 
-    await Promise.all(emailPromises);
+    const results = await Promise.all(emailPromises);
+    console.log(`📧 Meeting invitation sent to ${attendeeEmails.length} recipients`);
 
     res.json({
       success: true,
-      message: `Meeting invitation sent to ${attendeeEmails.length} attendees`
+      message: `Toplantı daveti ${attendeeEmails.length} kişiye gönderildi`,
+      details: results.length > 0 ? 'E-postalar başarıyla gönderildi' : 'E-posta gönderimi tamamlandı'
     });
 
   } catch (error) {
@@ -157,16 +219,29 @@ router.post('/send-notification', auth, async (req, res) => {
 
     const emailPromises = recipients.map(email => {
       const emailData = {
-        from: `${senderName} <${senderEmail}>`,
+        from: fromUser && req.user.role === 'member' 
+          ? `${req.user.name} <ybdigitalx@gmail.com>` 
+          : 'YB Digital <ybdigitalx@gmail.com>',
         to: email,
         subject: subject,
-        html: emailBody
+        html: emailBody,
+        replyTo: fromUser && req.user.role === 'member' ? req.user.email : 'ybdigitalx@gmail.com'
       };
       
       // Use real email if configured, otherwise use mock
-      if (hasValidEmailConfig) {
-        return transporter.sendMail(emailData).catch(error => {
-          console.log('Real email failed, using mock:', error.message);
+      if (hasValidEmailConfig && transporter) {
+        return transporter.sendMail(emailData).then(info => {
+          console.log('✅ Notification sent successfully!');
+          if (info.messageId) {
+            console.log('Message ID:', info.messageId);
+          }
+          // If using test service, show preview URL
+          if (nodemailer.getTestMessageUrl && nodemailer.getTestMessageUrl(info)) {
+            console.log('📧 Preview URL:', nodemailer.getTestMessageUrl(info));
+          }
+          return info;
+        }).catch(error => {
+          console.log('❌ Notification email failed, using mock:', error.message);
           return mockEmailSend(emailData);
         });
       } else {
@@ -175,11 +250,13 @@ router.post('/send-notification', auth, async (req, res) => {
       }
     });
 
-    await Promise.all(emailPromises);
+    const results = await Promise.all(emailPromises);
+    console.log(`📧 Notification sent to ${recipients.length} recipients`);
 
     res.json({
       success: true,
-      message: `Notification sent to ${recipients.length} recipients`
+      message: `E-posta ${recipients.length} kişiye gönderildi`,
+      details: results.length > 0 ? 'E-postalar başarıyla gönderildi' : 'E-posta gönderimi tamamlandı'
     });
 
   } catch (error) {

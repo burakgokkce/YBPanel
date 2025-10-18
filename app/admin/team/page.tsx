@@ -14,7 +14,15 @@ import {
   Star,
   Edit,
   Trash2,
-  Plus
+  Plus,
+  Search,
+  Filter,
+  Eye,
+  UserPlus,
+  UserMinus,
+  Shield,
+  Save,
+  X
 } from 'lucide-react';
 import api from '@/lib/api';
 import { User } from '@/types';
@@ -23,11 +31,35 @@ import { formatDate, getInitials } from '@/lib/utils';
 
 export default function TeamPage() {
   const [members, setMembers] = useState<User[]>([]);
+  const [filteredMembers, setFilteredMembers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [selectedRole, setSelectedRole] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingMember, setEditingMember] = useState<User | null>(null);
+  const [newMemberData, setNewMemberData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    phone: '',
+    address: '',
+    department: '',
+    position: '',
+    role: 'member' as 'admin' | 'project_manager' | 'member'
+  });
+
+  const departments = ['iOS', 'Android', 'Backend', 'Web', 'Mobil', 'Tasarım', 'Test', 'Proje Yönetimi', 'Yönetim'];
 
   useEffect(() => {
     fetchMembers();
   }, []);
+
+  useEffect(() => {
+    filterMembers();
+  }, [members, searchTerm, selectedDepartment, selectedRole]);
 
   const fetchMembers = async () => {
     try {
@@ -43,76 +75,119 @@ export default function TeamPage() {
     }
   };
 
-  const getDepartmentColor = (department: string) => {
-    const colors: { [key: string]: string } = {
-      'Yönetim': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-      'Proje Yönetimi': 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
-      'Backend': 'bg-green-500/20 text-green-400 border-green-500/30',
-      'Web': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-      'iOS': 'bg-gray-500/20 text-gray-400 border-gray-500/30',
-      'Android': 'bg-green-600/20 text-green-500 border-green-600/30',
-      'Mobil': 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
-      'Tasarım': 'bg-pink-500/20 text-pink-400 border-pink-500/30',
-      'Test': 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-    };
-    return colors[department] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+  const filterMembers = () => {
+    let filtered = members;
+
+    if (searchTerm) {
+      filtered = filtered.filter(member =>
+        member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.position?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (selectedDepartment) {
+      filtered = filtered.filter(member => member.department === selectedDepartment);
+    }
+
+    if (selectedRole) {
+      filtered = filtered.filter(member => member.role === selectedRole);
+    }
+
+    setFilteredMembers(filtered);
   };
 
-  const getDepartmentIcon = (department: string) => {
-    switch (department) {
-      case 'Yönetim':
-        return <Crown className="w-4 h-4" />;
-      case 'Proje Yönetimi':
-        return <Briefcase className="w-4 h-4" />;
-      case 'Backend':
-      case 'Web':
-      case 'iOS':
-      case 'Android':
-      case 'Mobil':
-        return <Building className="w-4 h-4" />;
-      case 'Tasarım':
-        return <Star className="w-4 h-4" />;
-      case 'Test':
-        return <Users className="w-4 h-4" />;
-      default:
-        return <Building className="w-4 h-4" />;
+  const handleAddMember = async () => {
+    try {
+      const response = await api.post('/auth/register', newMemberData);
+      if (response.data.success) {
+        toast.success('Yeni üye başarıyla eklendi');
+        setShowAddModal(false);
+        setNewMemberData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          password: '',
+          phone: '',
+          address: '',
+          department: '',
+          position: '',
+          role: 'member'
+        });
+        fetchMembers();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Üye eklenemedi');
     }
   };
 
-  // Departmanlara göre grupla
-  const groupedMembers = members.reduce((acc, member) => {
-    const dept = member.department || 'Diğer';
-    if (!acc[dept]) {
-      acc[dept] = [];
-    }
-    acc[dept].push(member);
-    return acc;
-  }, {} as { [key: string]: User[] });
+  const handleEditMember = async () => {
+    if (!editingMember) return;
 
-  // Departman sıralaması
-  const departmentOrder = [
-    'Yönetim',
-    'Proje Yönetimi', 
-    'Backend',
-    'Web',
-    'iOS',
-    'Android',
-    'Mobil',
-    'Tasarım',
-    'Test',
-    'Diğer'
-  ];
+    try {
+      const response = await api.put(`/users/${editingMember._id}`, {
+        firstName: editingMember.firstName,
+        lastName: editingMember.lastName,
+        email: editingMember.email,
+        phone: editingMember.phone,
+        address: editingMember.address,
+        department: editingMember.department,
+        position: editingMember.position,
+        role: editingMember.role
+      });
+      
+      if (response.data.success) {
+        toast.success('Üye bilgileri güncellendi');
+        setShowEditModal(false);
+        setEditingMember(null);
+        fetchMembers();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Güncelleme başarısız');
+    }
+  };
+
+  const handleDeleteMember = async (memberId: string) => {
+    if (!confirm('Bu üyeyi silmek istediğinizden emin misiniz?')) return;
+
+    try {
+      const response = await api.delete(`/users/${memberId}`);
+      if (response.data.success) {
+        toast.success('Üye başarıyla silindi');
+        fetchMembers();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Silme işlemi başarısız');
+    }
+  };
+
+  const handleToggleStatus = async (member: User) => {
+    try {
+      const response = await api.put(`/users/${member._id}`, {
+        isActive: !member.isActive
+      });
+      
+      if (response.data.success) {
+        toast.success(`Üye ${!member.isActive ? 'aktif' : 'pasif'} edildi`);
+        fetchMembers();
+      }
+    } catch (error: any) {
+      toast.error('Durum değiştirilemedi');
+    }
+  };
+
+  const openEditModal = (member: User) => {
+    setEditingMember(member);
+    setShowEditModal(true);
+  };
 
   if (isLoading) {
     return (
       <DashboardLayout requiredRole="admin">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-dark-card rounded w-1/4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-64 bg-dark-card rounded-xl"></div>
-            ))}
-          </div>
+          <div className="h-96 bg-dark-card rounded-xl"></div>
         </div>
       </DashboardLayout>
     );
@@ -120,135 +195,416 @@ export default function TeamPage() {
 
   return (
     <DashboardLayout requiredRole="admin">
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Header */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-accent to-highlight bg-clip-text text-transparent">
-            YB Digital Ekibi
-          </h1>
-          <p className="text-gray-400 text-lg">
-            Toplam {members.length} ekip üyesi • {Object.keys(groupedMembers).length} departman
-          </p>
-        </div>
-
-        {/* Departmanlar */}
-        {departmentOrder.map(department => {
-          const deptMembers = groupedMembers[department];
-          if (!deptMembers || deptMembers.length === 0) return null;
-
-          return (
-            <div key={department} className="space-y-4">
-              {/* Departman Başlığı */}
-              <div className="flex items-center space-x-3">
-                <div className={`p-2 rounded-lg border ${getDepartmentColor(department)}`}>
-                  {getDepartmentIcon(department)}
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold">{department}</h2>
-                  <p className="text-gray-400">{deptMembers.length} kişi</p>
-                </div>
-              </div>
-
-              {/* Ekip Üyeleri */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {deptMembers.map((member) => (
-                  <div
-                    key={member._id}
-                    className="bg-dark-card border border-dark-border rounded-xl p-6 hover:border-accent/50 transition-all duration-300 hover:shadow-lg hover:shadow-accent/10"
-                  >
-                    {/* Profil Resmi ve Temel Bilgiler */}
-                    <div className="text-center mb-4">
-                      <div className="relative inline-block">
-                        {member.profilePicture ? (
-                          <img
-                            src={member.profilePicture}
-                            alt={member.name}
-                            className="w-20 h-20 rounded-full object-cover border-2 border-accent/20"
-                          />
-                        ) : (
-                          <div className="w-20 h-20 bg-gradient-to-br from-accent to-highlight rounded-full flex items-center justify-center text-white font-bold text-xl border-2 border-accent/20">
-                            {getInitials(member.name)}
-                          </div>
-                        )}
-                        {member.role === 'admin' && (
-                          <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
-                            <Crown className="w-3 h-3 text-white" />
-                          </div>
-                        )}
-                        <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-dark-card ${
-                          member.isActive ? 'bg-green-500' : 'bg-red-500'
-                        }`}></div>
-                      </div>
-                      
-                      <h3 className="font-bold text-lg mt-3">{member.name}</h3>
-                      <p className="text-accent font-medium">{member.position}</p>
-                      
-                      {/* Departman Badge */}
-                      <div className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs border mt-2 ${getDepartmentColor(member.department || 'Diğer')}`}>
-                        {getDepartmentIcon(member.department || 'Diğer')}
-                        <span>{member.department}</span>
-                      </div>
-                    </div>
-
-                    {/* İletişim Bilgileri */}
-                    <div className="space-y-2 text-sm">
-                      {member.email && (
-                        <div className="flex items-center space-x-2 text-gray-400">
-                          <Mail className="w-4 h-4 flex-shrink-0" />
-                          <span className="truncate">{member.email}</span>
-                        </div>
-                      )}
-                      
-                      {member.phone && (
-                        <div className="flex items-center space-x-2 text-gray-400">
-                          <Phone className="w-4 h-4 flex-shrink-0" />
-                          <span>{member.phone}</span>
-                        </div>
-                      )}
-                      
-                      {member.address && (
-                        <div className="flex items-center space-x-2 text-gray-400">
-                          <MapPin className="w-4 h-4 flex-shrink-0" />
-                          <span className="truncate">{member.address}</span>
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center space-x-2 text-gray-400">
-                        <Calendar className="w-4 h-4 flex-shrink-0" />
-                        <span>Katılım: {formatDate(member.joinDate)}</span>
-                      </div>
-                    </div>
-
-                    {/* Aksiyon Butonları */}
-                    <div className="flex space-x-2 mt-4 pt-4 border-t border-dark-border">
-                      <button className="flex-1 bg-dark-bg hover:bg-accent/20 text-accent border border-accent/20 hover:border-accent/50 px-3 py-2 rounded-lg transition-colors flex items-center justify-center space-x-1">
-                        <Edit className="w-4 h-4" />
-                        <span className="text-xs">Düzenle</span>
-                      </button>
-                      {member.role !== 'admin' && (
-                        <button className="bg-dark-bg hover:bg-red-500/20 text-red-400 border border-red-400/20 hover:border-red-400/50 px-3 py-2 rounded-lg transition-colors">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-
-        {/* Yeni Üye Ekleme Kartı */}
-        <div className="bg-dark-card border-2 border-dashed border-dark-border rounded-xl p-8 text-center hover:border-accent/50 transition-colors cursor-pointer">
-          <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Plus className="w-8 h-8 text-accent" />
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Ekip Yönetimi</h1>
+            <p className="text-gray-400">Takım üyelerini yönetin ve organize edin</p>
           </div>
-          <h3 className="text-lg font-semibold mb-2">Yeni Ekip Üyesi Ekle</h3>
-          <p className="text-gray-400 mb-4">Ekibinize yeni bir üye ekleyin</p>
-          <button className="bg-accent hover:bg-accent/90 text-white px-6 py-2 rounded-xl transition-colors">
-            Üye Ekle
+          
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center space-x-2 bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-xl transition-colors"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>Yeni Üye</span>
           </button>
         </div>
+
+        {/* Filters */}
+        <div className="bg-dark-card border border-dark-border rounded-xl p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Ara..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+              />
+            </div>
+            
+            <select
+              value={selectedDepartment}
+              onChange={(e) => setSelectedDepartment(e.target.value)}
+              className="px-4 py-2 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+            >
+              <option value="">Tüm Departmanlar</option>
+              {departments.map(dept => (
+                <option key={dept} value={dept}>{dept}</option>
+              ))}
+            </select>
+            
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              className="px-4 py-2 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+            >
+              <option value="">Tüm Roller</option>
+              <option value="admin">Yönetici</option>
+              <option value="project_manager">Proje Yöneticisi</option>
+              <option value="member">Üye</option>
+            </select>
+            
+            <div className="text-sm text-gray-400 flex items-center">
+              <Users className="w-4 h-4 mr-2" />
+              {filteredMembers.length} üye
+            </div>
+          </div>
+        </div>
+
+        {/* Members Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredMembers.map(member => (
+            <div key={member._id} className="bg-dark-card border border-dark-border rounded-xl p-6 hover:border-accent/50 transition-colors">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  {member.profilePicture ? (
+                    <img
+                      src={`http://localhost:5002${member.profilePicture}`}
+                      alt={member.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-gradient-to-br from-accent to-highlight rounded-full flex items-center justify-center text-white font-semibold">
+                      {getInitials(member.firstName, member.lastName)}
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-semibold">{member.firstName} {member.lastName}</h3>
+                    <p className="text-sm text-gray-400">{member.position || 'Pozisyon belirtilmemiş'}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  {member.role === 'admin' && (
+                    <Crown className="w-4 h-4 text-red-400" title="Yönetici" />
+                  )}
+                  {member.role === 'project_manager' && (
+                    <Shield className="w-4 h-4 text-blue-400" title="Proje Yöneticisi" />
+                  )}
+                  <div className={`w-3 h-3 rounded-full ${member.isActive ? 'bg-green-400' : 'bg-red-400'}`} />
+                </div>
+              </div>
+              
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center text-sm text-gray-400">
+                  <Mail className="w-4 h-4 mr-2" />
+                  {member.email}
+                </div>
+                {member.phone && (
+                  <div className="flex items-center text-sm text-gray-400">
+                    <Phone className="w-4 h-4 mr-2" />
+                    {member.phone}
+                  </div>
+                )}
+                {member.department && (
+                  <div className="flex items-center text-sm text-gray-400">
+                    <Building className="w-4 h-4 mr-2" />
+                    {member.department}
+                  </div>
+                )}
+                <div className="flex items-center text-sm text-gray-400">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {formatDate(member.joinDate || member.createdAt)}
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between pt-4 border-t border-dark-border">
+                <button
+                  onClick={() => handleToggleStatus(member)}
+                  className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                    member.isActive 
+                      ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' 
+                      : 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                  }`}
+                >
+                  {member.isActive ? 'Aktif' : 'Pasif'}
+                </button>
+                
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => openEditModal(member)}
+                    className="p-2 text-gray-400 hover:text-accent transition-colors"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteMember(member._id)}
+                    className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {filteredMembers.length === 0 && (
+          <div className="text-center py-12">
+            <Users className="w-16 h-16 mx-auto mb-4 text-gray-500" />
+            <h3 className="text-lg font-semibold mb-2">Üye bulunamadı</h3>
+            <p className="text-gray-400 mb-4">Arama kriterlerinize uygun üye bulunmuyor</p>
+          </div>
+        )}
+
+        {/* Add Member Modal */}
+        {showAddModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-dark-card border border-dark-border rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold">Yeni Üye Ekle</h3>
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Ad</label>
+                  <input
+                    type="text"
+                    value={newMemberData.firstName}
+                    onChange={(e) => setNewMemberData({ ...newMemberData, firstName: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Soyad</label>
+                  <input
+                    type="text"
+                    value={newMemberData.lastName}
+                    onChange={(e) => setNewMemberData({ ...newMemberData, lastName: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">E-posta</label>
+                  <input
+                    type="email"
+                    value={newMemberData.email}
+                    onChange={(e) => setNewMemberData({ ...newMemberData, email: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Şifre</label>
+                  <input
+                    type="password"
+                    value={newMemberData.password}
+                    onChange={(e) => setNewMemberData({ ...newMemberData, password: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Telefon</label>
+                  <input
+                    type="tel"
+                    value={newMemberData.phone}
+                    onChange={(e) => setNewMemberData({ ...newMemberData, phone: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Departman</label>
+                  <select
+                    value={newMemberData.department}
+                    onChange={(e) => setNewMemberData({ ...newMemberData, department: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  >
+                    <option value="">Departman seçin</option>
+                    {departments.map(dept => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Pozisyon</label>
+                  <input
+                    type="text"
+                    value={newMemberData.position}
+                    onChange={(e) => setNewMemberData({ ...newMemberData, position: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Rol</label>
+                  <select
+                    value={newMemberData.role}
+                    onChange={(e) => setNewMemberData({ ...newMemberData, role: e.target.value as 'admin' | 'project_manager' | 'member' })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  >
+                    <option value="member">Üye</option>
+                    <option value="project_manager">Proje Yöneticisi</option>
+                    <option value="admin">Yönetici</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2 mt-4">Adres</label>
+                <textarea
+                  rows={3}
+                  value={newMemberData.address}
+                  onChange={(e) => setNewMemberData({ ...newMemberData, address: e.target.value })}
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors resize-none"
+                />
+              </div>
+
+              <div className="flex space-x-3 pt-6">
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="flex-1 px-4 py-2 border border-dark-border text-gray-300 rounded-xl hover:bg-dark-bg transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={handleAddMember}
+                  className="flex-1 bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-xl transition-colors flex items-center justify-center space-x-2"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Üye Ekle</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Member Modal */}
+        {showEditModal && editingMember && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-dark-card border border-dark-border rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold">Üye Bilgilerini Düzenle</h3>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Ad</label>
+                  <input
+                    type="text"
+                    value={editingMember.firstName || ''}
+                    onChange={(e) => setEditingMember({ ...editingMember, firstName: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Soyad</label>
+                  <input
+                    type="text"
+                    value={editingMember.lastName || ''}
+                    onChange={(e) => setEditingMember({ ...editingMember, lastName: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">E-posta</label>
+                  <input
+                    type="email"
+                    value={editingMember.email}
+                    onChange={(e) => setEditingMember({ ...editingMember, email: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Telefon</label>
+                  <input
+                    type="tel"
+                    value={editingMember.phone || ''}
+                    onChange={(e) => setEditingMember({ ...editingMember, phone: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Departman</label>
+                  <select
+                    value={editingMember.department || ''}
+                    onChange={(e) => setEditingMember({ ...editingMember, department: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  >
+                    <option value="">Departman seçin</option>
+                    {departments.map(dept => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Pozisyon</label>
+                  <input
+                    type="text"
+                    value={editingMember.position || ''}
+                    onChange={(e) => setEditingMember({ ...editingMember, position: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Rol</label>
+                  <select
+                    value={editingMember.role}
+                    onChange={(e) => setEditingMember({ ...editingMember, role: e.target.value as 'admin' | 'project_manager' | 'member' })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  >
+                    <option value="member">Üye</option>
+                    <option value="project_manager">Proje Yöneticisi</option>
+                    <option value="admin">Yönetici</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2 mt-4">Adres</label>
+                <textarea
+                  rows={3}
+                  value={editingMember.address || ''}
+                  onChange={(e) => setEditingMember({ ...editingMember, address: e.target.value })}
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors resize-none"
+                />
+              </div>
+
+              <div className="flex space-x-3 pt-6">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 px-4 py-2 border border-dark-border text-gray-300 rounded-xl hover:bg-dark-bg transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={handleEditMember}
+                  className="flex-1 bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-xl transition-colors flex items-center justify-center space-x-2"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Kaydet</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

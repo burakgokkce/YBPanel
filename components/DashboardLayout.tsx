@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  requiredRole?: 'admin' | 'member';
+  requiredRole?: 'admin' | 'project_manager' | 'member';
 }
 
 export default function DashboardLayout({ children, requiredRole }: DashboardLayoutProps) {
@@ -33,8 +33,11 @@ export default function DashboardLayout({ children, requiredRole }: DashboardLay
       const parsedUser = JSON.parse(userData);
       
       if (requiredRole && parsedUser.role !== requiredRole) {
-        router.push('/');
-        return;
+        // Proje yöneticisi admin sayfalarına erişebilir ama üye tablosu hariç
+        if (!(requiredRole === 'admin' && parsedUser.role === 'project_manager')) {
+          router.push('/');
+          return;
+        }
       }
 
       setUser(parsedUser);

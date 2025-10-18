@@ -52,4 +52,23 @@ const adminAuth = async (req, res, next) => {
   }
 };
 
-module.exports = { auth, adminAuth };
+const projectManagerAuth = async (req, res, next) => {
+  try {
+    await auth(req, res, () => {
+      if (req.user.role !== 'admin' && req.user.role !== 'project_manager') {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Access denied. Project manager or admin privileges required.' 
+        });
+      }
+      next();
+    });
+  } catch (error) {
+    res.status(401).json({ 
+      success: false, 
+      message: 'Authorization failed' 
+    });
+  }
+};
+
+module.exports = { auth, adminAuth, projectManagerAuth };

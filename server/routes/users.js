@@ -1,11 +1,31 @@
 const express = require('express');
 const User = require('../models/User');
-const { auth, adminAuth } = require('../middleware/auth');
+const { auth, adminAuth, projectManagerAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Get all users (Admin only)
-router.get('/', adminAuth, async (req, res) => {
+// Get all users for email (Members can access for email purposes)
+router.get('/for-email', auth, async (req, res) => {
+  try {
+    const users = await User.find({ isActive: true })
+      .select('name firstName lastName email department role')
+      .sort({ name: 1 });
+
+    res.json({
+      success: true,
+      data: users
+    });
+  } catch (error) {
+    console.error('Get users for email error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching users for email'
+    });
+  }
+});
+
+// Get all users (Admin and Project Manager)
+router.get('/', projectManagerAuth, async (req, res) => {
   try {
     const { search, department, status } = req.query;
     let query = {};
@@ -81,7 +101,7 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// Update user
+// Update user (Admin and Project Manager can update any, Members can update own)
 router.put('/:id', auth, async (req, res) => {
   try {
     const { name, firstName, lastName, email, phone, address, department, position, isActive, iban, birthDate, startDate } = req.body;
@@ -89,8 +109,8 @@ router.put('/:id', auth, async (req, res) => {
     
     console.log('Update user request:', { userId, body: req.body });
 
-    // Members can only update their own profile, admins can update any
-    if (req.user.role !== 'admin' && req.user._id.toString() !== userId) {
+    // Members can only update their own profile, admins and project managers can update any
+    if (req.user.role !== 'admin' && req.user.role !== 'project_manager' && req.user._id.toString() !== userId) {
       return res.status(403).json({
         success: false,
         message: 'Access denied'
@@ -141,8 +161,8 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-// Delete user (Admin only)
-router.delete('/:id', adminAuth, async (req, res) => {
+// Delete user (Admin and Project Manager)
+router.delete('/:id', projectManagerAuth, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     
