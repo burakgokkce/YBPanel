@@ -111,7 +111,13 @@ export default function AdminLogin() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-3">
+            <p className="text-gray-400 text-sm">
+              Proje yöneticisi misiniz?{' '}
+              <Link href="/project-manager-login" className="text-blue-400 hover:text-blue-300 transition-colors">
+                Proje Yöneticisi Girişi
+              </Link>
+            </p>
             <p className="text-gray-400 text-sm">
               Yönetici değil misiniz?{' '}
               <Link href="/member-login" className="text-accent hover:text-highlight transition-colors">

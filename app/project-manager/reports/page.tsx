@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export default function ReportsPage() {
   const [stats, setStats] = useState({
@@ -45,23 +47,70 @@ export default function ReportsPage() {
     }
   };
 
-  const exportReport = () => {
-    const reportData = {
-      date: new Date().toLocaleDateString('tr-TR'),
-      ...stats
-    };
-    
-    const dataStr = JSON.stringify(reportData, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = `rapor_${new Date().toISOString().split('T')[0]}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-    
-    toast.success('Rapor indirildi');
+  const exportReportPDF = async () => {
+    try {
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      
+      // Header
+      pdf.setFontSize(20);
+      pdf.text('YB Digital Panel - Sistem Raporu', pageWidth / 2, 20, { align: 'center' });
+      
+      pdf.setFontSize(12);
+      pdf.text(`Rapor Tarihi: ${new Date().toLocaleDateString('tr-TR')}`, pageWidth / 2, 30, { align: 'center' });
+      
+      // Stats
+      let yPosition = 50;
+      pdf.setFontSize(16);
+      pdf.text('Sistem İstatistikleri', 20, yPosition);
+      
+      yPosition += 15;
+      pdf.setFontSize(12);
+      
+      const statsData = [
+        ['Toplam Üye Sayısı', stats.totalMembers.toString()],
+        ['Aktif Üye Sayısı', stats.activeMembers.toString()],
+        ['Toplam Görev Sayısı', stats.totalTasks.toString()],
+        ['Tamamlanan Görevler', stats.completedTasks.toString()],
+        ['Bekleyen Görevler', stats.pendingTasks.toString()],
+        ['Toplam Toplantı Sayısı', stats.totalMeetings.toString()],
+        ['Toplam Duyuru Sayısı', stats.totalAnnouncements.toString()]
+      ];
+      
+      statsData.forEach(([label, value]) => {
+        pdf.text(`${label}: ${value}`, 20, yPosition);
+        yPosition += 10;
+      });
+      
+      // Performance metrics
+      yPosition += 10;
+      pdf.setFontSize(16);
+      pdf.text('Performans Metrikleri', 20, yPosition);
+      
+      yPosition += 15;
+      pdf.setFontSize(12);
+      
+      const completionRate = stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0;
+      const activeRate = stats.totalMembers > 0 ? Math.round((stats.activeMembers / stats.totalMembers) * 100) : 0;
+      
+      pdf.text(`Görev Tamamlanma Oranı: %${completionRate}`, 20, yPosition);
+      yPosition += 10;
+      pdf.text(`Aktif Üye Oranı: %${activeRate}`, 20, yPosition);
+      
+      // Footer
+      pdf.setFontSize(10);
+      pdf.text('YB Digital Panel - Otomatik Rapor', pageWidth / 2, pageHeight - 10, { align: 'center' });
+      
+      // Save PDF
+      const fileName = `YB_Digital_Rapor_${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(fileName);
+      
+      toast.success('PDF raporu indirildi');
+    } catch (error) {
+      console.error('PDF export error:', error);
+      toast.error('PDF raporu oluşturulamadı');
+    }
   };
 
   if (isLoading) {
@@ -102,11 +151,11 @@ export default function ReportsPage() {
             </select>
             
             <button
-              onClick={exportReport}
+              onClick={exportReportPDF}
               className="flex items-center space-x-2 bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-xl transition-colors"
             >
               <Download className="w-4 h-4" />
-              <span>Rapor İndir</span>
+              <span>PDF Rapor İndir</span>
             </button>
           </div>
         </div>

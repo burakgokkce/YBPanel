@@ -54,12 +54,12 @@ export default function MembersTablePage() {
   const departments = ['iOS', 'Android', 'Backend', 'Web', 'Mobil', 'Tasarım', 'Test', 'Proje Yönetimi', 'Yönetim'];
 
   useEffect(() => {
-    // Proje yöneticisi üye tablosuna erişemez
+    // Proje yöneticisi üye tablosuna erişemez - admin/team'e yönlendir
     const userData = localStorage.getItem('user');
     if (userData) {
       const user = JSON.parse(userData);
       if (user.role === 'project_manager') {
-        window.location.href = '/admin';
+        window.location.href = '/admin/team';
         return;
       }
     }

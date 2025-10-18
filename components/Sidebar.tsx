@@ -4,10 +4,13 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
+  LayoutDashboard, 
   Users, 
-  MessageSquare, 
+  UserCheck,
   CheckSquare, 
+  MessageSquare, 
   Calendar, 
+  Mail, 
   BarChart3, 
   Settings, 
   LogOut, 
@@ -15,8 +18,7 @@ import {
   X,
   Shield,
   User,
-  LayoutDashboard,
-  Mail
+  FileText
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -32,13 +34,29 @@ export default function Sidebar({ userRole }: SidebarProps) {
   const adminMenuItems = [
     { icon: LayoutDashboard, label: 'Panel', href: '/admin', exact: true },
     { icon: Users, label: 'Üyeler', href: '/admin/members' },
-    { icon: BarChart3, label: 'Üye Tablosu', href: '/admin/members-table' },
-    { icon: Shield, label: 'Ekip', href: '/admin/team' },
-    { icon: MessageSquare, label: 'Duyurular', href: '/admin/announcements' },
+    { icon: UserCheck, label: 'Üye Tablosu', href: '/admin/members-table' },
+    { icon: Users, label: 'Takım', href: '/admin/team' },
     { icon: CheckSquare, label: 'Görevler', href: '/admin/tasks' },
+    { icon: MessageSquare, label: 'Duyurular', href: '/admin/announcements' },
     { icon: Calendar, label: 'Toplantılar', href: '/admin/meetings' },
     { icon: Mail, label: 'E-posta Gönder', href: '/admin/email' },
+    { icon: FileText, label: 'Kullanıcı Raporları', href: '/admin/user-reports' },
+    { icon: BarChart3, label: 'Sistem Raporları', href: '/admin/reports' },
     { icon: Settings, label: 'Ayarlar', href: '/admin/settings' },
+    { icon: User, label: 'Profil', href: '/admin/profile' },
+  ];
+
+  const projectManagerAdminMenuItems = [
+    { icon: LayoutDashboard, label: 'Panel', href: '/admin', exact: true },
+    { icon: Users, label: 'Ekip', href: '/admin/team' },
+    { icon: CheckSquare, label: 'Görevler', href: '/admin/tasks' },
+    { icon: MessageSquare, label: 'Duyurular', href: '/admin/announcements' },
+    { icon: Calendar, label: 'Toplantılar', href: '/admin/meetings' },
+    { icon: Mail, label: 'E-posta Gönder', href: '/admin/email' },
+    { icon: FileText, label: 'Ekip Raporları', href: '/admin/user-reports' },
+    { icon: BarChart3, label: 'Sistem Raporları', href: '/admin/reports' },
+    { icon: Settings, label: 'Ayarlar', href: '/admin/settings' },
+    { icon: User, label: 'Profil', href: '/admin/profile' },
   ];
 
   const memberMenuItems = [
@@ -47,6 +65,8 @@ export default function Sidebar({ userRole }: SidebarProps) {
     { icon: MessageSquare, label: 'Duyurular', href: '/member/announcements' },
     { icon: Calendar, label: 'Toplantılar', href: '/member/meetings' },
     { icon: Mail, label: 'E-posta Gönder', href: '/member/email' },
+    { icon: FileText, label: 'Rapor Yaz', href: '/member/write-report' },
+    { icon: BarChart3, label: 'Raporlarım', href: '/member/reports' },
     { icon: User, label: 'Profil', href: '/member/profile' },
   ];
 
@@ -57,12 +77,17 @@ export default function Sidebar({ userRole }: SidebarProps) {
     { icon: MessageSquare, label: 'Duyuru Yönetimi', href: '/project-manager/announcements' },
     { icon: Calendar, label: 'Toplantı Yönetimi', href: '/project-manager/meetings' },
     { icon: Mail, label: 'E-posta Gönder', href: '/project-manager/email' },
+    { icon: FileText, label: 'Rapor Yaz', href: '/project-manager/write-report' },
     { icon: BarChart3, label: 'Raporlar', href: '/project-manager/reports' },
     { icon: Settings, label: 'Sistem Ayarları', href: '/project-manager/settings' },
     { icon: User, label: 'Profil Ayarları', href: '/project-manager/profile' },
   ];
 
+  // URL'ye göre menü seçimi
+  const isAdminPanel = pathname.startsWith('/admin');
+  
   const menuItems = userRole === 'admin' ? adminMenuItems : 
+                   userRole === 'project_manager' && isAdminPanel ? projectManagerAdminMenuItems :
                    userRole === 'project_manager' ? projectManagerMenuItems : 
                    memberMenuItems;
 

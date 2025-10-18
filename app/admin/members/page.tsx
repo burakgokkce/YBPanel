@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/DashboardLayout';
 import { 
   Users, 
@@ -27,6 +28,7 @@ import toast from 'react-hot-toast';
 import { formatDate, getInitials } from '@/lib/utils';
 
 export default function MembersTablePage() {
+  const router = useRouter();
   const [members, setMembers] = useState<User[]>([]);
   const [filteredMembers, setFilteredMembers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,18 +56,18 @@ export default function MembersTablePage() {
   const departments = ['iOS', 'Android', 'Backend', 'Web', 'Mobil', 'Tasarım', 'Test', 'Proje Yönetimi', 'Yönetim'];
 
   useEffect(() => {
-    // Proje yöneticisi üye tablosuna erişemez
+    // Proje yöneticisi üye tablosuna erişemez - admin/team'e yönlendir
     const userData = localStorage.getItem('user');
     if (userData) {
       const user = JSON.parse(userData);
       if (user.role === 'project_manager') {
-        window.location.href = '/admin';
+        router.push('/admin/team');
         return;
       }
     }
     
     fetchMembers();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     filterMembers();

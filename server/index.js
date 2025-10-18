@@ -59,6 +59,7 @@ const meetingRoutes = require('./routes/meetings');
 const dashboardRoutes = require('./routes/dashboard');
 const uploadRoutes = require('./routes/upload');
 const emailRoutes = require('./routes/email');
+const userReportsRoutes = require('./routes/user-reports');
 // const settingsRoutes = require('./routes/settings'); // Temporarily disabled
 
 // Routes
@@ -70,6 +71,7 @@ app.use('/api/meetings', meetingRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/email', emailRoutes);
+app.use('/api/user-reports', userReportsRoutes);
 // app.use('/api/settings', settingsRoutes); // Temporarily disabled
 
 // Health check
