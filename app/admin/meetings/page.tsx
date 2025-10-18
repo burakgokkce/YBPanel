@@ -20,8 +20,8 @@ import { formatDate, formatDateTime } from '@/lib/utils';
 
 function isUpcoming(date: Date | string) {
   const now = new Date();
-  const target = new Date(date);
-  return target >= now;
+  const meetingDate = new Date(date);
+  return meetingDate >= now;
 }
 
 export default function MeetingsPage() {
