@@ -9,7 +9,8 @@ import api from '@/lib/api';
 
 export default function Register() {
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -23,7 +24,7 @@ export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -31,24 +32,24 @@ export default function Register() {
   };
 
   const validateForm = () => {
-    if (!formData.name || !formData.email || !formData.password) {
-      toast.error('Please fill in all required fields');
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+      toast.error('Lütfen tüm zorunlu alanları doldurun');
       return false;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error('Şifreler eşleşmiyor');
       return false;
     }
 
     if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters long');
+      toast.error('Şifre en az 6 karakter olmalıdır');
       return false;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      toast.error('Please enter a valid email address');
+      toast.error('Lütfen geçerli bir e-posta adresi girin');
       return false;
     }
 
@@ -64,16 +65,20 @@ export default function Register() {
 
     try {
       const { confirmPassword, ...submitData } = formData;
+      console.log('Submitting registration data:', submitData);
       const response = await api.post('/auth/register', submitData);
+      console.log('Registration response:', response.data);
       
       if (response.data.success) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-        toast.success('Registration successful! Welcome to YB Digital!');
+        toast.success('Kayıt başarılı! YB Digital\'e hoş geldiniz!');
         router.push('/member');
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Registration failed');
+      console.error('Registration error:', error);
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || 'Kayıt başarısız';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -87,7 +92,7 @@ export default function Register() {
           className="inline-flex items-center text-gray-400 hover:text-white mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
+          Ana Sayfaya Dön
         </Link>
 
         <div className="bg-dark-card border border-dark-border rounded-2xl p-8 shadow-2xl">
@@ -95,37 +100,60 @@ export default function Register() {
             <div className="bg-green-500/20 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
               <Users className="w-8 h-8 text-green-500" />
             </div>
-            <h1 className="text-2xl font-bold mb-2">Join YB Digital</h1>
-            <p className="text-gray-400">Create your member account</p>
+            <h1 className="text-2xl font-bold mb-2">YB Digital'e Katıl</h1>
+            <p className="text-gray-400">Üye hesabınızı oluşturun</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
-              {/* Name */}
+              {/* First Name */}
               <div>
-                <label htmlFor="name" className="block text-sm font-medium mb-2">
-                  Full Name *
+                <label htmlFor="firstName" className="block text-sm font-medium mb-2">
+                  Ad *
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
                     type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
+                    id="firstName"
+                    name="firstName"
+                    value={formData.firstName}
                     onChange={handleChange}
                     className="w-full pl-10 pr-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-green-500 transition-colors"
-                    placeholder="Enter your full name"
+                    placeholder="Adınızı girin"
                     disabled={isLoading}
                     required
                   />
                 </div>
               </div>
 
+              {/* Last Name */}
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium mb-2">
+                  Soyad *
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    id="lastName"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-green-500 transition-colors"
+                    placeholder="Soyadınızı girin"
+                    disabled={isLoading}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-1 gap-6">
               {/* Email */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium mb-2">
-                  Email Address *
+                  E-posta Adresi *
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -136,7 +164,7 @@ export default function Register() {
                     value={formData.email}
                     onChange={handleChange}
                     className="w-full pl-10 pr-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-green-500 transition-colors"
-                    placeholder="Enter your email"
+                    placeholder="E-posta adresinizi girin"
                     disabled={isLoading}
                     required
                   />
@@ -146,7 +174,7 @@ export default function Register() {
               {/* Password */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium mb-2">
-                  Password *
+                  Şifre *
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -157,7 +185,7 @@ export default function Register() {
                     value={formData.password}
                     onChange={handleChange}
                     className="w-full pl-10 pr-12 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-green-500 transition-colors"
-                    placeholder="Create a password"
+                    placeholder="Şifre oluşturun"
                     disabled={isLoading}
                     required
                   />
@@ -175,7 +203,7 @@ export default function Register() {
               {/* Confirm Password */}
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
-                  Confirm Password *
+                  Şifre Onayı *
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -186,7 +214,7 @@ export default function Register() {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     className="w-full pl-10 pr-12 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-green-500 transition-colors"
-                    placeholder="Confirm your password"
+                    placeholder="Şifrenizi tekrar girin"
                     disabled={isLoading}
                     required
                   />
@@ -287,15 +315,15 @@ export default function Register() {
               disabled={isLoading}
               className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading ? 'Hesap Oluşturuluyor...' : 'Hesap Oluştur'}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-gray-400 text-sm">
-              Already have an account?{' '}
+              Zaten hesabınız var mı?{' '}
               <Link href="/member-login" className="text-green-500 hover:text-green-400 transition-colors">
-                Sign in here
+                Buradan giriş yapın
               </Link>
             </p>
           </div>

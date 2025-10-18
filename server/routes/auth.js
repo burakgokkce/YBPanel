@@ -75,13 +75,20 @@ router.post('/admin-login', async (req, res) => {
 // Member Registration
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, phone, address, department, position } = req.body;
+    const { firstName, lastName, name, email, password, phone, address, department, position, role } = req.body;
 
     // Validation
-    if (!name || !email || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Name, email, and password are required'
+        message: 'Email and password are required'
+      });
+    }
+
+    if (!firstName || !lastName) {
+      return res.status(400).json({
+        success: false,
+        message: 'First name and last name are required'
       });
     }
 
@@ -96,14 +103,16 @@ router.post('/register', async (req, res) => {
 
     // Create new user
     const user = new User({
-      name,
+      firstName,
+      lastName,
+      name: name || `${firstName} ${lastName}`,
       email: email.toLowerCase(),
       password,
       phone,
       address,
       department,
       position,
-      role: 'member'
+      role: role || 'member'
     });
 
     await user.save();
@@ -118,9 +127,15 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Registration error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     res.status(500).json({
       success: false,
-      message: 'Server error during registration'
+      message: 'Server error during registration',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });

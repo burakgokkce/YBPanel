@@ -27,23 +27,25 @@ export default function MemberLogin() {
     e.preventDefault();
     
     if (!formData.email || !formData.password) {
-      toast.error('Please fill in all fields');
+      toast.error('Lütfen tüm alanları doldurun');
       return;
     }
 
     setIsLoading(true);
 
     try {
+      console.log('Submitting login data:', formData);
       const response = await api.post('/auth/member-login', formData);
+      console.log('Login response:', response.data);
       
       if (response.data.success) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-        toast.success(`Welcome back, ${response.data.user.name}!`);
+        toast.success(`Tekrar hoş geldiniz, ${response.data.user.name}!`);
         router.push('/member');
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Login failed');
+      toast.error(error.response?.data?.message || 'Giriş başarısız');
     } finally {
       setIsLoading(false);
     }

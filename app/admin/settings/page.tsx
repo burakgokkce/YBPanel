@@ -13,6 +13,7 @@ import {
   Edit
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import api from '@/lib/api';
 
 export default function SettingsPage() {
   const [language, setLanguage] = useState('tr');
@@ -73,13 +74,25 @@ export default function SettingsPage() {
     setEditingValue('');
   };
 
-  const handleSaveSettings = () => {
-    // Ayarları localStorage'a kaydet
-    localStorage.setItem('appSettings', JSON.stringify({
-      language,
-      departments
-    }));
-    toast.success('Ayarlar kaydedildi');
+  const handleSaveSettings = async () => {
+    try {
+      const response = await api.put('/settings', {
+        language,
+        departments
+      });
+      
+      if (response.data.success) {
+        // Ayarları localStorage'a da kaydet
+        localStorage.setItem('appSettings', JSON.stringify({
+          language,
+          departments
+        }));
+        toast.success('Ayarlar kaydedildi');
+      }
+    } catch (error: any) {
+      toast.error('Ayarlar kaydedilemedi');
+      console.error('Settings save error:', error);
+    }
   };
 
   useEffect(() => {

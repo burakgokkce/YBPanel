@@ -9,10 +9,10 @@ require('dotenv').config();
 process.env.MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27018/yb-digital-panel';
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'yb-digital-panel-super-secret-jwt-key-2024';
 process.env.ADMIN_MASTER_PASSWORD = process.env.ADMIN_MASTER_PASSWORD || 'yb150924';
-process.env.PORT = process.env.PORT || '5001';
+process.env.PORT = process.env.PORT || '5002';
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5002;
 
 // Middleware
 app.use(cors());
@@ -53,6 +53,8 @@ const announcementRoutes = require('./routes/announcements');
 const taskRoutes = require('./routes/tasks');
 const meetingRoutes = require('./routes/meetings');
 const dashboardRoutes = require('./routes/dashboard');
+// const emailRoutes = require('./routes/email'); // Temporarily disabled
+// const settingsRoutes = require('./routes/settings'); // Temporarily disabled
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -61,6 +63,8 @@ app.use('/api/announcements', announcementRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/meetings', meetingRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+// app.use('/api/email', emailRoutes); // Temporarily disabled
+// app.use('/api/settings', settingsRoutes); // Temporarily disabled
 
 // Health check
 app.get('/api/health', (req, res) => {

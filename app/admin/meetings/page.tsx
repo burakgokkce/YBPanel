@@ -47,7 +47,7 @@ export default function MeetingsPage() {
         setMeetings(response.data.data);
       }
     } catch (error: any) {
-      toast.error('Failed to load meetings');
+      toast.error('Toplantılar yüklenemedi');
       console.error('Meetings error:', error);
     } finally {
       setIsLoading(false);
@@ -69,20 +69,48 @@ export default function MeetingsPage() {
     e.preventDefault();
     
     if (!formData.title || !formData.date || !formData.time) {
-      toast.error('Please fill in all required fields');
+      toast.error('Lütfen tüm zorunlu alanları doldurun');
       return;
     }
 
     try {
-      const url = editingMeeting 
-        ? `/meetings/${editingMeeting._id}` 
-        : '/meetings';
+      const meetingData = {
+        ...formData,
+        date: new Date(formData.date + 'T' + formData.time),
+        attendees: formData.attendees
+      };
+
+      const url = editingMeeting ? `/meetings/${editingMeeting._id}` : '/meetings';
       const method = editingMeeting ? 'put' : 'post';
 
-      const response = await api[method](url, formData);
+      const response = await api[method](url, meetingData);
       
       if (response.data.success) {
-        toast.success(`Meeting ${editingMeeting ? 'updated' : 'created'} successfully`);
+        toast.success(`Toplantı ${editingMeeting ? 'güncellendi' : 'oluşturuldu'}`);
+        
+        // Send email invitations if attendees are selected
+        if (formData.attendees.length > 0) {
+          try {
+            const attendeeEmails = users
+              .filter(user => formData.attendees.includes(user._id))
+              .map(user => user.email);
+
+            await api.post('/email/send-meeting-invitation', {
+              meetingTitle: formData.title,
+              meetingDate: formData.date,
+              meetingTime: formData.time,
+              meetingLink: formData.link,
+              attendeeEmails: attendeeEmails,
+              notes: formData.notes
+            });
+
+            toast.success(`E-posta davetleri ${attendeeEmails.length} kişiye gönderildi`);
+          } catch (emailError) {
+            console.error('Email sending failed:', emailError);
+            toast.error('Toplantı oluşturuldu ancak e-posta gönderilemedi');
+          }
+        }
+
         setShowModal(false);
         setEditingMeeting(null);
         setFormData({
@@ -97,7 +125,7 @@ export default function MeetingsPage() {
         fetchMeetings();
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to save meeting');
+      toast.error(error.response?.data?.message || 'Toplantı kaydedilemedi');
     }
   };
 

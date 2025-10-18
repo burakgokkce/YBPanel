@@ -32,6 +32,30 @@ export default function MembersPage() {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedMember, setSelectedMember] = useState<User | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editMemberData, setEditMemberData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    department: '',
+    position: '',
+    role: 'member' as 'admin' | 'member',
+    isActive: true
+  });
+  const [newMemberData, setNewMemberData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    phone: '',
+    address: '',
+    department: '',
+    position: '',
+    role: 'member' as 'admin' | 'member'
+  });
 
   useEffect(() => {
     fetchMembers();
@@ -102,17 +126,48 @@ export default function MembersPage() {
     setFilteredMembers(filtered);
   };
 
-  const handleDeleteMember = async (memberId: string) => {
-    if (!confirm('Are you sure you want to delete this member?')) return;
+  const handleDelete = async (memberId: string) => {
+    if (!confirm('Bu üyeyi silmek istediğinizden emin misiniz?')) return;
 
     try {
       const response = await api.delete(`/users/${memberId}`);
       if (response.data.success) {
-        toast.success('Member deleted successfully');
+        toast.success('Üye başarıyla silindi');
         fetchMembers();
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to delete member');
+      toast.error(error.response?.data?.message || 'Üye silinemedi');
+    }
+  };
+
+  const handleAddMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newMemberData.firstName || !newMemberData.lastName || !newMemberData.email || !newMemberData.password) {
+      toast.error('Lütfen tüm zorunlu alanları doldurun');
+      return;
+    }
+
+    try {
+      const response = await api.post('/auth/register', newMemberData);
+      if (response.data.success) {
+        toast.success('Yeni üye başarıyla eklendi');
+        setShowAddModal(false);
+        setNewMemberData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          password: '',
+          phone: '',
+          address: '',
+          department: '',
+          position: '',
+          role: 'member'
+        });
+        fetchMembers();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Üye eklenemedi');
     }
   };
 
@@ -134,6 +189,42 @@ export default function MembersPage() {
   const openMemberModal = (member: User) => {
     setSelectedMember(member);
     setShowModal(true);
+  };
+
+  const openEditModal = (member: User) => {
+    setEditMemberData({
+      firstName: member.firstName || '',
+      lastName: member.lastName || '',
+      email: member.email,
+      phone: member.phone || '',
+      address: member.address || '',
+      department: member.department || '',
+      position: member.position || '',
+      role: member.role,
+      isActive: member.isActive
+    });
+    setSelectedMember(member);
+    setShowEditModal(true);
+  };
+
+  const handleEditMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedMember || !editMemberData.firstName || !editMemberData.lastName || !editMemberData.email) {
+      toast.error('Lütfen tüm zorunlu alanları doldurun');
+      return;
+    }
+
+    try {
+      const response = await api.put(`/users/${selectedMember._id}`, editMemberData);
+      if (response.data.success) {
+        toast.success('Üye başarıyla güncellendi');
+        setShowEditModal(false);
+        fetchMembers();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Üye güncellenemedi');
+    }
   };
 
   if (isLoading) {
@@ -161,7 +252,10 @@ export default function MembersPage() {
             <h1 className="text-3xl font-bold mb-2">Ekip Üyeleri</h1>
             <p className="text-gray-400">Ekip üyelerinizi ve bilgilerini yönetin</p>
           </div>
-          <button className="bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-xl flex items-center space-x-2 transition-colors">
+          <button 
+            onClick={() => setShowAddModal(true)}
+            className="bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-xl flex items-center space-x-2 transition-colors"
+          >
             <Plus className="w-4 h-4" />
             <span>Üye Ekle</span>
           </button>
@@ -242,16 +336,14 @@ export default function MembersPage() {
                     <Eye className="w-4 h-4 text-gray-400" />
                   </button>
                   <button
-                    onClick={() => handleToggleStatus(member)}
-                    className={`p-2 hover:bg-dark-bg rounded-lg transition-colors ${
-                      member.isActive ? 'text-green-400' : 'text-red-400'
-                    }`}
-                    title={member.isActive ? 'Deactivate' : 'Activate'}
+                    onClick={() => openEditModal(member)}
+                    className="p-2 hover:bg-dark-bg rounded-lg transition-colors text-blue-400"
+                    title="Edit Member"
                   >
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDeleteMember(member._id)}
+                    onClick={() => handleDelete(member._id)}
                     className="p-2 hover:bg-dark-bg rounded-lg transition-colors text-red-400"
                     title="Delete Member"
                   >
@@ -376,6 +468,366 @@ export default function MembersPage() {
                 </span>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Member Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-dark-card border border-dark-border rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold">Yeni Üye Ekle</h3>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleAddMember} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="firstName" className="block text-sm font-medium mb-2">
+                    Ad *
+                  </label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    value={newMemberData.firstName}
+                    onChange={(e) => setNewMemberData({ ...newMemberData, firstName: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                    placeholder="Adını girin"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="lastName" className="block text-sm font-medium mb-2">
+                    Soyad *
+                  </label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    value={newMemberData.lastName}
+                    onChange={(e) => setNewMemberData({ ...newMemberData, lastName: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                    placeholder="Soyadını girin"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium mb-2">
+                  E-posta *
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={newMemberData.email}
+                  onChange={(e) => setNewMemberData({ ...newMemberData, email: e.target.value })}
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  placeholder="E-posta adresini girin"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium mb-2">
+                  Şifre *
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  value={newMemberData.password}
+                  onChange={(e) => setNewMemberData({ ...newMemberData, password: e.target.value })}
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  placeholder="Şifre belirleyin"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="department" className="block text-sm font-medium mb-2">
+                    Departman
+                  </label>
+                  <select
+                    id="department"
+                    value={newMemberData.department}
+                    onChange={(e) => setNewMemberData({ ...newMemberData, department: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  >
+                    <option value="">Departman seçin</option>
+                    <option value="iOS">iOS</option>
+                    <option value="Android">Android</option>
+                    <option value="Backend">Backend</option>
+                    <option value="Web">Web</option>
+                    <option value="Mobil">Mobil</option>
+                    <option value="Tasarım">Tasarım</option>
+                    <option value="Test">Test</option>
+                    <option value="Proje Yönetimi">Proje Yönetimi</option>
+                    <option value="Yönetim">Yönetim</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="position" className="block text-sm font-medium mb-2">
+                    Pozisyon
+                  </label>
+                  <input
+                    type="text"
+                    id="position"
+                    value={newMemberData.position}
+                    onChange={(e) => setNewMemberData({ ...newMemberData, position: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                    placeholder="Pozisyonu girin"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium mb-2">
+                  Telefon
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  value={newMemberData.phone}
+                  onChange={(e) => setNewMemberData({ ...newMemberData, phone: e.target.value })}
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  placeholder="Telefon numarasını girin"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="address" className="block text-sm font-medium mb-2">
+                  Adres
+                </label>
+                <textarea
+                  id="address"
+                  rows={3}
+                  value={newMemberData.address}
+                  onChange={(e) => setNewMemberData({ ...newMemberData, address: e.target.value })}
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors resize-none"
+                  placeholder="Adresini girin"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="role" className="block text-sm font-medium mb-2">
+                  Rol
+                </label>
+                <select
+                  id="role"
+                  value={newMemberData.role}
+                  onChange={(e) => setNewMemberData({ ...newMemberData, role: e.target.value as 'admin' | 'member' })}
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                >
+                  <option value="member">Üye</option>
+                  <option value="admin">Yönetici</option>
+                </select>
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="flex-1 px-4 py-2 border border-dark-border text-gray-300 rounded-xl hover:bg-dark-bg transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-xl transition-colors"
+                >
+                  Üye Ekle
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Member Modal */}
+      {showEditModal && selectedMember && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-dark-card border border-dark-border rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold">Üye Düzenle</h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleEditMember} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="editFirstName" className="block text-sm font-medium mb-2">
+                    Ad *
+                  </label>
+                  <input
+                    type="text"
+                    id="editFirstName"
+                    value={editMemberData.firstName}
+                    onChange={(e) => setEditMemberData({ ...editMemberData, firstName: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                    placeholder="Adını girin"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="editLastName" className="block text-sm font-medium mb-2">
+                    Soyad *
+                  </label>
+                  <input
+                    type="text"
+                    id="editLastName"
+                    value={editMemberData.lastName}
+                    onChange={(e) => setEditMemberData({ ...editMemberData, lastName: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                    placeholder="Soyadını girin"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="editEmail" className="block text-sm font-medium mb-2">
+                  E-posta *
+                </label>
+                <input
+                  type="email"
+                  id="editEmail"
+                  value={editMemberData.email}
+                  onChange={(e) => setEditMemberData({ ...editMemberData, email: e.target.value })}
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  placeholder="E-posta adresini girin"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="editDepartment" className="block text-sm font-medium mb-2">
+                    Departman
+                  </label>
+                  <select
+                    id="editDepartment"
+                    value={editMemberData.department}
+                    onChange={(e) => setEditMemberData({ ...editMemberData, department: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  >
+                    <option value="">Departman seçin</option>
+                    <option value="iOS">iOS</option>
+                    <option value="Android">Android</option>
+                    <option value="Backend">Backend</option>
+                    <option value="Web">Web</option>
+                    <option value="Mobil">Mobil</option>
+                    <option value="Tasarım">Tasarım</option>
+                    <option value="Test">Test</option>
+                    <option value="Proje Yönetimi">Proje Yönetimi</option>
+                    <option value="Yönetim">Yönetim</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="editPosition" className="block text-sm font-medium mb-2">
+                    Pozisyon
+                  </label>
+                  <input
+                    type="text"
+                    id="editPosition"
+                    value={editMemberData.position}
+                    onChange={(e) => setEditMemberData({ ...editMemberData, position: e.target.value })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                    placeholder="Pozisyonu girin"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="editPhone" className="block text-sm font-medium mb-2">
+                  Telefon
+                </label>
+                <input
+                  type="tel"
+                  id="editPhone"
+                  value={editMemberData.phone}
+                  onChange={(e) => setEditMemberData({ ...editMemberData, phone: e.target.value })}
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  placeholder="Telefon numarasını girin"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="editAddress" className="block text-sm font-medium mb-2">
+                  Adres
+                </label>
+                <textarea
+                  id="editAddress"
+                  rows={3}
+                  value={editMemberData.address}
+                  onChange={(e) => setEditMemberData({ ...editMemberData, address: e.target.value })}
+                  className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors resize-none"
+                  placeholder="Adresini girin"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="editRole" className="block text-sm font-medium mb-2">
+                    Rol
+                  </label>
+                  <select
+                    id="editRole"
+                    value={editMemberData.role}
+                    onChange={(e) => setEditMemberData({ ...editMemberData, role: e.target.value as 'admin' | 'member' })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  >
+                    <option value="member">Üye</option>
+                    <option value="admin">Yönetici</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="editStatus" className="block text-sm font-medium mb-2">
+                    Durum
+                  </label>
+                  <select
+                    id="editStatus"
+                    value={editMemberData.isActive ? 'active' : 'inactive'}
+                    onChange={(e) => setEditMemberData({ ...editMemberData, isActive: e.target.value === 'active' })}
+                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
+                  >
+                    <option value="active">Aktif</option>
+                    <option value="inactive">Pasif</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 px-4 py-2 border border-dark-border text-gray-300 rounded-xl hover:bg-dark-bg transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-xl transition-colors"
+                >
+                  Güncelle
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

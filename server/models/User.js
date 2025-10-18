@@ -38,8 +38,8 @@ const userSchema = new mongoose.Schema({
   },
   department: {
     type: String,
-    enum: ['iOS', 'Android', 'Backend', 'Web', 'Mobil', 'Tasarım', 'Test', 'Proje Yönetimi', 'Yönetim'],
     trim: true,
+    default: '',
   },
   position: {
     type: String,
