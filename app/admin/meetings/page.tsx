@@ -18,6 +18,12 @@ import { Meeting, User as UserType } from '@/types';
 import toast from 'react-hot-toast';
 import { formatDate, formatDateTime } from '@/lib/utils';
 
+function isUpcoming(date: Date | string) {
+  const now = new Date();
+  const target = new Date(date);
+  return target >= now;
+}
+
 export default function MeetingsPage() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [users, setUsers] = useState<UserType[]>([]);
