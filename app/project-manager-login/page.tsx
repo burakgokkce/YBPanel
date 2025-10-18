@@ -17,37 +17,40 @@ export default function ProjectManagerLogin() {
       return;
     }
     
-    setIsLoading(true);
-
-    // Proje yöneticisi şifre kontrolü
-    if (password === '150924') {
-      // Proje yöneticisi bilgilerini localStorage'a kaydet
-      const projectManagerUser = {
-        _id: 'pm-001',
-        name: 'Proje Yöneticisi',
-        firstName: 'Proje',
-        lastName: 'Yöneticisi',
-        email: 'project-manager@ybdigital.com',
-        role: 'project_manager',
-        department: 'Proje Yönetimi',
-        position: 'Proje Yöneticisi',
-        isActive: true
-      };
-
-      localStorage.setItem('user', JSON.stringify(projectManagerUser));
-      localStorage.setItem('token', 'pm-token-' + Date.now());
-      
-      toast.success('Giriş başarılı!');
-      
-      // Yönlendirme
-      setTimeout(() => {
-        router.push('/admin');
-        setIsLoading(false);
-      }, 1000);
-    } else {
+    if (password !== '150924') {
       toast.error('Şifre hatalı!');
-      setIsLoading(false);
+      return;
     }
+    
+    setIsLoading(true);
+    
+    // Proje yöneticisi bilgilerini localStorage'a kaydet
+    const projectManagerUser = {
+      _id: 'pm-001',
+      name: 'Proje Yöneticisi',
+      firstName: 'Proje',
+      lastName: 'Yöneticisi',
+      email: 'project-manager@ybdigital.com',
+      role: 'project_manager',
+      department: 'Proje Yönetimi',
+      position: 'Proje Yöneticisi',
+      isActive: true
+    };
+
+    // Eski verileri temizle
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    
+    // Yeni verileri kaydet
+    localStorage.setItem('user', JSON.stringify(projectManagerUser));
+    localStorage.setItem('token', 'pm-token-' + Date.now());
+    
+    toast.success('Giriş başarılı! Admin paneline yönlendiriliyor...');
+    
+    // Yönlendirme
+    setTimeout(() => {
+      window.location.replace('/admin');
+    }, 1500);
   };
 
   return (
