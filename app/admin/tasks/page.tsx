@@ -233,11 +233,18 @@ export default function TasksPage() {
         const teamNames = response.data.data
           .filter((task: Task) => task.team)
           .map((task: Task) => task.team as string);
-        const uniqueTeams = Array.from(new Set(teamNames)) as string[];
+        
+        // Add default teams
+        const defaultTeams = ['iOS', 'Android', 'Backend', 'Frontend', 'Web', 'Mobil', 'Tasarım', 'Test', 'Proje Yönetimi', 'Yönetim', 'DevOps', 'UI/UX', 'QA'];
+        
+        const combinedTeams = [...defaultTeams, ...teamNames];
+        const uniqueTeams = Array.from(new Set(combinedTeams)) as string[];
         setTeams(uniqueTeams);
       }
     } catch (error) {
       console.error('Teams error:', error);
+      // Set default teams if API fails
+      setTeams(['iOS', 'Android', 'Backend', 'Frontend', 'Web', 'Mobil', 'Tasarım', 'Test', 'Proje Yönetimi', 'Yönetim', 'DevOps', 'UI/UX', 'QA']);
     }
   };
 
@@ -574,27 +581,49 @@ export default function TasksPage() {
               {/* Individual Assignment */}
               {formData.assignmentType === 'individual' && (
                 <div>
-                  <label htmlFor="assignedTo" className="block text-sm font-medium mb-2">
+                  <label className="block text-sm font-medium mb-2">
                     Atanan Kişiler *
                   </label>
-                  <select
-                    multiple
-                    id="assignedTo"
-                    value={formData.assignedTo}
-                    onChange={(e) => {
-                      const values = Array.from(e.target.selectedOptions, option => option.value);
-                      setFormData({ ...formData, assignedTo: values });
-                    }}
-                    className="w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl focus:outline-none focus:border-accent transition-colors"
-                    size={4}
-                  >
-                    {users.map(user => (
-                      <option key={user._id} value={user._id}>
-                        {user.name} - {user.department}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-gray-400 mt-1">Ctrl/Cmd tuşu ile birden fazla kişi seçebilirsiniz</p>
+                  <div className="max-h-48 overflow-y-auto border border-dark-border rounded-xl p-4 space-y-2">
+                    {users.length > 0 ? (
+                      users.map(user => (
+                        <label key={user._id} className="flex items-center space-x-3 cursor-pointer hover:bg-dark-bg p-2 rounded-lg">
+                          <input
+                            type="checkbox"
+                            checked={formData.assignedTo.includes(user._id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFormData({ 
+                                  ...formData, 
+                                  assignedTo: [...formData.assignedTo, user._id] 
+                                });
+                              } else {
+                                setFormData({ 
+                                  ...formData, 
+                                  assignedTo: formData.assignedTo.filter(id => id !== user._id) 
+                                });
+                              }
+                            }}
+                            className="w-4 h-4 text-accent bg-dark-bg border-dark-border rounded focus:ring-accent focus:ring-2"
+                          />
+                          <div className="flex items-center space-x-2">
+                            <div className="w-8 h-8 bg-accent/20 rounded-full flex items-center justify-center text-accent text-xs font-semibold">
+                              {user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">{user.name}</p>
+                              <p className="text-xs text-gray-400">{user.department || 'Departman belirtilmemiş'}</p>
+                            </div>
+                          </div>
+                        </label>
+                      ))
+                    ) : (
+                      <p className="text-gray-400 text-sm text-center py-4">Kayıtlı üye bulunamadı</p>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Seçilen: {formData.assignedTo.length} kişi
+                  </p>
                 </div>
               )}
 

@@ -14,7 +14,10 @@ import {
   Save,
   X,
   Eye,
-  EyeOff
+  EyeOff,
+  Camera,
+  Upload,
+  Trash2
 } from 'lucide-react';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -43,6 +46,7 @@ export default function MemberProfile() {
     new: false,
     confirm: false
   });
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   useEffect(() => {
     fetchUserProfile();
@@ -134,6 +138,64 @@ export default function MemberProfile() {
     });
   };
 
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Sadece JPEG, PNG, GIF ve WebP dosyaları desteklenir');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Dosya boyutu 5MB\'dan küçük olmalıdır');
+      return;
+    }
+
+    setUploadingPhoto(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('profilePicture', file);
+
+      const response = await api.post('/upload/profile-picture', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data.success) {
+        // Update user data
+        const updatedUser = { ...user, profilePicture: response.data.data.profilePicture };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        toast.success('Profil resmi başarıyla yüklendi');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Profil resmi yüklenemedi');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handlePhotoDelete = async () => {
+    try {
+      const response = await api.delete('/upload/profile-picture');
+      
+      if (response.data.success) {
+        const updatedUser = { ...user, profilePicture: '' };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        toast.success('Profil resmi silindi');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Profil resmi silinemedi');
+    }
+  };
+
   if (isLoading) {
     return (
       <DashboardLayout requiredRole="member">
@@ -169,8 +231,8 @@ export default function MemberProfile() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">My Profile</h1>
-            <p className="text-gray-400">Manage your personal information and settings</p>
+            <h1 className="text-3xl font-bold mb-2">Profilim</h1>
+            <p className="text-gray-400">Kişisel bilgilerinizi ve ayarlarınızı yönetin</p>
           </div>
           {!isEditing && (
             <button
@@ -187,19 +249,58 @@ export default function MemberProfile() {
         <div className="bg-dark-card border border-dark-border rounded-xl p-8">
           {/* Profile Header */}
           <div className="text-center mb-8">
-            <div className="w-24 h-24 bg-highlight/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-highlight font-semibold text-2xl">
-                {getInitials(user.name)}
-              </span>
+            <div className="relative w-24 h-24 mx-auto mb-4">
+              {user.profilePicture ? (
+                <img
+                  src={`http://localhost:5002${user.profilePicture}`}
+                  alt={user.name}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-highlight/20"
+                />
+              ) : (
+                <div className="w-24 h-24 bg-highlight/20 rounded-full flex items-center justify-center border-4 border-highlight/20">
+                  <span className="text-highlight font-semibold text-2xl">
+                    {getInitials(user.name)}
+                  </span>
+                </div>
+              )}
+              
+              {/* Photo Upload/Delete Buttons */}
+              <div className="absolute -bottom-2 -right-2 flex space-x-1">
+                <label className="bg-highlight hover:bg-highlight/90 text-white p-2 rounded-full cursor-pointer transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                    disabled={uploadingPhoto}
+                  />
+                  {uploadingPhoto ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Camera className="w-4 h-4" />
+                  )}
+                </label>
+                
+                {user.profilePicture && (
+                  <button
+                    onClick={handlePhotoDelete}
+                    className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-colors"
+                    title="Profil resmini sil"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
+            
             <h2 className="text-2xl font-bold">{user.name}</h2>
-            <p className="text-gray-400">{user.position || 'Team Member'}</p>
+            <p className="text-gray-400">{user.position || 'Takım Üyesi'}</p>
             <span className={`inline-block mt-2 px-3 py-1 text-sm rounded-full ${
               user.isActive 
                 ? 'bg-green-500/20 text-green-400' 
                 : 'bg-red-500/20 text-red-400'
             }`}>
-              {user.isActive ? 'Active Member' : 'Inactive'}
+              {user.isActive ? 'Aktif Üye' : 'Pasif'}
             </span>
           </div>
 

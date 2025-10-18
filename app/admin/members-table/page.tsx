@@ -161,8 +161,10 @@ export default function MembersTablePage() {
   };
 
   const handlePhotoUpload = async (memberId: string, file: File) => {
-    if (!file.type.startsWith('image/')) {
-      toast.error('Lütfen geçerli bir resim dosyası seçin');
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Sadece JPEG, PNG, GIF ve WebP dosyaları desteklenir');
       return;
     }
 
@@ -174,29 +176,23 @@ export default function MembersTablePage() {
     setUploadingPhoto(memberId);
 
     try {
-      // Convert to base64 for simple storage
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const base64 = e.target?.result as string;
-        
-        try {
-          const response = await api.put(`/users/${memberId}`, {
-            profilePicture: base64
-          });
-          
-          if (response.data.success) {
-            toast.success('Profil resmi güncellendi');
-            fetchMembers();
-          }
-        } catch (error: any) {
-          toast.error('Resim yüklenemedi');
-        } finally {
-          setUploadingPhoto(null);
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      toast.error('Resim yüklenemedi');
+      const formData = new FormData();
+      formData.append('profilePicture', file);
+
+      // Upload the file using admin endpoint
+      const uploadResponse = await api.post(`/upload/profile-picture/${memberId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (uploadResponse.data.success) {
+        toast.success('Profil resmi güncellendi');
+        fetchMembers();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Resim yüklenemedi');
+    } finally {
       setUploadingPhoto(null);
     }
   };
@@ -288,7 +284,7 @@ export default function MembersTablePage() {
                       <div className="relative group">
                         {member.profilePicture ? (
                           <img
-                            src={member.profilePicture}
+                            src={member.profilePicture.startsWith('/uploads/') ? `http://localhost:5002${member.profilePicture}` : member.profilePicture}
                             alt={member.name}
                             className="w-12 h-12 rounded-full object-cover border-2 border-accent/20"
                           />

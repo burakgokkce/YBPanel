@@ -197,7 +197,7 @@ router.put('/:id', auth, async (req, res) => {
       }
 
       // Members can only update status
-      if (status && ['pending', 'in_progress', 'completed'].includes(status)) {
+      if (status && ['beklemede', 'devam_ediyor', 'tamamlandi', 'iptal_edildi'].includes(status)) {
         task.status = status;
       }
     } else {

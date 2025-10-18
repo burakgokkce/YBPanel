@@ -3,6 +3,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 require('dotenv').config();
 
 // Set default environment variables if not provided
@@ -17,6 +18,9 @@ const PORT = process.env.PORT || 5002;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files (uploaded images)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27018/yb-digital-panel', {
@@ -53,6 +57,7 @@ const announcementRoutes = require('./routes/announcements');
 const taskRoutes = require('./routes/tasks');
 const meetingRoutes = require('./routes/meetings');
 const dashboardRoutes = require('./routes/dashboard');
+const uploadRoutes = require('./routes/upload');
 // const emailRoutes = require('./routes/email'); // Temporarily disabled
 // const settingsRoutes = require('./routes/settings'); // Temporarily disabled
 
@@ -63,6 +68,7 @@ app.use('/api/announcements', announcementRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/meetings', meetingRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/upload', uploadRoutes);
 // app.use('/api/email', emailRoutes); // Temporarily disabled
 // app.use('/api/settings', settingsRoutes); // Temporarily disabled
 
