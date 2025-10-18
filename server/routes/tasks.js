@@ -5,6 +5,35 @@ const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Get my tasks (for members)
+router.get('/my-tasks', auth, async (req, res) => {
+  try {
+    const tasks = await Task.find({
+      assignedTo: req.user._id
+    })
+      .populate('assignedTo', 'name email')
+      .populate('createdBy', 'name email')
+      .sort({ createdAt: -1 });
+
+    // Add assignedToNames for display
+    const tasksWithNames = tasks.map(task => ({
+      ...task.toObject(),
+      assignedToNames: task.assignedTo.map(user => user.name)
+    }));
+
+    res.json({
+      success: true,
+      data: tasksWithNames
+    });
+  } catch (error) {
+    console.error('Get my tasks error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching my tasks'
+    });
+  }
+});
+
 // Get tasks
 router.get('/', auth, async (req, res) => {
   try {

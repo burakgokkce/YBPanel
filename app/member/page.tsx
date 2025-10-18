@@ -32,7 +32,7 @@ export default function MemberDashboard() {
         setDashboardData(response.data.data);
       }
     } catch (error: any) {
-      toast.error('Failed to load dashboard data');
+      toast.error('Panel verileri yüklenemedi');
       console.error('Member dashboard error:', error);
     } finally {
       setIsLoading(false);
@@ -44,11 +44,11 @@ export default function MemberDashboard() {
       const response = await api.put(`/tasks/${taskId}`, { status: newStatus });
       
       if (response.data.success) {
-        toast.success('Task status updated successfully');
+        toast.success('Görev durumu güncellendi');
         fetchDashboardData();
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to update task');
+      toast.error(error.response?.data?.message || 'Görev güncellenemedi');
     }
   };
 
@@ -74,8 +74,8 @@ export default function MemberDashboard() {
         {/* Welcome Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Welcome back, {profile?.name}!</h1>
-            <p className="text-gray-400">Here's what's happening in your workspace today.</p>
+            <h1 className="text-3xl font-bold mb-2">Hoş geldin, {profile?.name}!</h1>
+            <p className="text-gray-400">Bugün çalışma alanında neler oluyor, bir göz atalım.</p>
           </div>
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-highlight/20 rounded-full flex items-center justify-center">
@@ -91,7 +91,7 @@ export default function MemberDashboard() {
           <div className="bg-dark-card border border-dark-border rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">My Tasks</p>
+                <p className="text-gray-400 text-sm font-medium">Görevlerim</p>
                 <p className="text-2xl font-bold mt-1">{stats?.myTasksCount || 0}</p>
               </div>
               <div className="p-3 rounded-full bg-highlight/20">
@@ -103,7 +103,7 @@ export default function MemberDashboard() {
           <div className="bg-dark-card border border-dark-border rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">Completed</p>
+                <p className="text-gray-400 text-sm font-medium">Tamamlanan</p>
                 <p className="text-2xl font-bold mt-1">{stats?.completedTasksCount || 0}</p>
               </div>
               <div className="p-3 rounded-full bg-green-500/20">
@@ -115,7 +115,7 @@ export default function MemberDashboard() {
           <div className="bg-dark-card border border-dark-border rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">Pending</p>
+                <p className="text-gray-400 text-sm font-medium">Bekleyen</p>
                 <p className="text-2xl font-bold mt-1">{stats?.pendingTasksCount || 0}</p>
               </div>
               <div className="p-3 rounded-full bg-yellow-500/20">
@@ -131,7 +131,7 @@ export default function MemberDashboard() {
           <div className="bg-dark-card border border-dark-border rounded-xl p-6">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <User className="w-5 h-5 mr-2 text-highlight" />
-              My Profile
+              Profilim
             </h3>
             <div className="text-center mb-4">
               <div className="w-20 h-20 bg-highlight/20 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -140,21 +140,21 @@ export default function MemberDashboard() {
                 </span>
               </div>
               <h4 className="font-semibold">{profile?.name}</h4>
-              <p className="text-gray-400 text-sm">{profile?.position || 'Team Member'}</p>
+              <p className="text-gray-400 text-sm">{profile?.position || 'Takım Üyesi'}</p>
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-400">Email:</span>
+                <span className="text-gray-400">E-posta:</span>
                 <span>{profile?.email}</span>
               </div>
               {profile?.department && (
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Department:</span>
+                  <span className="text-gray-400">Departman:</span>
                   <span>{profile.department}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-gray-400">Joined:</span>
+                <span className="text-gray-400">Katılım:</span>
                 <span>{profile?.joinDate ? formatDate(profile.joinDate) : 'N/A'}</span>
               </div>
             </div>
@@ -164,7 +164,7 @@ export default function MemberDashboard() {
           <div className="bg-dark-card border border-dark-border rounded-xl p-6">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <CheckSquare className="w-5 h-5 mr-2 text-highlight" />
-              My Tasks
+              Görevlerim
             </h3>
             <div className="space-y-3 max-h-64 overflow-y-auto">
               {myTasks?.length > 0 ? (
@@ -195,16 +195,16 @@ export default function MemberDashboard() {
                           onChange={(e) => handleTaskStatusUpdate(task._id, e.target.value)}
                           className="text-xs bg-dark-bg border border-dark-border rounded px-2 py-1"
                         >
-                          <option value="pending">Pending</option>
-                          <option value="in_progress">In Progress</option>
-                          <option value="completed">Completed</option>
+                          <option value="pending">Beklemede</option>
+                          <option value="in_progress">Devam Ediyor</option>
+                          <option value="completed">Tamamlandı</option>
                         </select>
                       )}
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-gray-400 text-sm text-center py-4">No tasks assigned</p>
+                <p className="text-gray-400 text-sm text-center py-4">Atanan görev yok</p>
               )}
             </div>
           </div>
@@ -213,7 +213,7 @@ export default function MemberDashboard() {
           <div className="bg-dark-card border border-dark-border rounded-xl p-6">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <TrendingUp className="w-5 h-5 mr-2 text-accent" />
-              Team Tasks
+              Takım Görevleri
             </h3>
             <div className="space-y-3 max-h-64 overflow-y-auto">
               {teamTasks?.length > 0 ? (
@@ -243,7 +243,7 @@ export default function MemberDashboard() {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-400 text-sm text-center py-4">No team tasks available</p>
+                <p className="text-gray-400 text-sm text-center py-4">Takım görevi yok</p>
               )}
             </div>
           </div>
@@ -255,7 +255,7 @@ export default function MemberDashboard() {
           <div className="bg-dark-card border border-dark-border rounded-xl p-6">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <MessageSquare className="w-5 h-5 mr-2 text-yellow-400" />
-              Recent Announcements
+              Son Duyurular
             </h3>
             <div className="space-y-4 max-h-64 overflow-y-auto">
               {announcements?.length > 0 ? (
@@ -269,13 +269,13 @@ export default function MemberDashboard() {
                     </div>
                     <p className="text-gray-400 text-sm mb-2">{announcement.description}</p>
                     <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>By {announcement.createdByName}</span>
+                      <span>Yazan: {announcement.createdByName}</span>
                       <span>{formatDate(announcement.createdAt)}</span>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-gray-400 text-sm text-center py-4">No announcements</p>
+                <p className="text-gray-400 text-sm text-center py-4">Duyuru yok</p>
               )}
             </div>
           </div>
@@ -284,7 +284,7 @@ export default function MemberDashboard() {
           <div className="bg-dark-card border border-dark-border rounded-xl p-6">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <Calendar className="w-5 h-5 mr-2 text-purple-400" />
-              Upcoming Meetings
+              Yaklaşan Toplantılar
             </h3>
             <div className="space-y-4 max-h-64 overflow-y-auto">
               {upcomingMeetings?.length > 0 ? (
@@ -299,16 +299,16 @@ export default function MemberDashboard() {
                       {meeting.link && (
                         <div>
                           🔗 <a href={meeting.link} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
-                            Join Meeting
+                            Toplantıya Katıl
                           </a>
                         </div>
                       )}
-                      <div>👤 By {meeting.createdByName}</div>
+                      <div>👤 Düzenleyen: {meeting.createdByName}</div>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-gray-400 text-sm text-center py-4">No upcoming meetings</p>
+                <p className="text-gray-400 text-sm text-center py-4">Yaklaşan toplantı yok</p>
               )}
             </div>
           </div>
